@@ -58,9 +58,12 @@ public class HashTableImplTest {
         assertNull(meep);
     }
 
-    @DisplayName("Ask for Value which is Null")
+    @DisplayName("Delete a Value")
     @Test
     public void testFive() {
+        hashTable.put(0, "Yeet");
+        hashTable.put(3, "Meep");
+        hashTable.put(5, "Hello");
         hashTable.put(0, null);
         String meep = hashTable.get(0);
         assertNull(meep);
@@ -74,4 +77,9 @@ public class HashTableImplTest {
         assertEquals("Meep!", meep);
     }
 
+    @DisplayName("Request a Null Key and Get Back Illegal Argument Exception")
+    @Test
+    public void testSeven() {
+        assertThrowsExactly(IllegalArgumentException.class, () -> hashTable.get(null));
+    }
 }

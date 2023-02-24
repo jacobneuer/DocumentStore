@@ -8,7 +8,7 @@ public class HashTableImpl<Key,Value> implements edu.yu.cs.com1320.project.HashT
             table[i] = new LinkedEntries();
         }
     }
-    class Entry<Key, Value> {
+    private class Entry<Key, Value> {
 
         Key key;
         Value value;
@@ -19,23 +19,6 @@ public class HashTableImpl<Key,Value> implements edu.yu.cs.com1320.project.HashT
             }
             key = k;
             value = v;
-        }
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (this.getClass() != obj.getClass()) {
-                return false;
-            }
-            Entry other = (Entry) obj;
-            if (this.key == other.key) {
-                return true;
-            }
-            return false;
         }
     }
     private Object[] table;
@@ -72,12 +55,49 @@ public class HashTableImpl<Key,Value> implements edu.yu.cs.com1320.project.HashT
         Entry<Key, Value> putEntry = new Entry<>(k, v);
         LinkedEntries list = (LinkedEntries) this.table[index];
         LinkedEntries.Node current = list.head;
+        if (v == null) {
+            return deleteEntry(k, v);
+        }
         if (current == null) {
             list.addNode(putEntry);
             return null;
         }
+        return finishPut(k, v);
+    }
+    private Value deleteEntry(Key k, Value v){
+        int index = this.hashFunction(k);
+        Entry<Key, Value> putEntry = new Entry<>(k, v);
+        LinkedEntries list = (LinkedEntries) this.table[index];
+        LinkedEntries.Node current = list.head;
         Key currentKey = (Key) current.entry.key;
-        if(currentKey.equals(k)) {
+        if (currentKey.equals(k)) {
+            Value old = (Value) current.entry.value;
+            list.head = list.head.next;
+            return old;
+        }
+        else {
+            while (current != null){
+                if (current.next != null) {
+                    Key loopKey = (Key) current.next.entry.key;
+                    if(loopKey.equals(k)) {
+                        Value old = (Value) current.next.entry.value;
+                        current.next = current.next.next;
+                        return old;
+                    }
+                }
+                current = current.next;
+            }
+        }
+        return null;
+    }
+
+    private Value finishPut(Key k, Value v){
+        int index = this.hashFunction(k);
+        Entry<Key, Value> putEntry = new Entry<>(k, v);
+        LinkedEntries list = (LinkedEntries) this.table[index];
+        LinkedEntries.Node current = list.head;
+        Key currentKey = (Key) current.entry.key;
+        if (currentKey.equals(k)) {
             Value old = (Value) current.entry.value;
             list.head = list.head.next;
             list.addNode(putEntry);
@@ -99,7 +119,7 @@ public class HashTableImpl<Key,Value> implements edu.yu.cs.com1320.project.HashT
         return null;
     }
 
-    public class LinkedEntries {
+    private class LinkedEntries {
         Node head;
         class Node {
             Entry entry;
