@@ -1,0 +1,223 @@
+package edu.yu.cs.com1320.project.impl;
+
+import edu.yu.cs.com1320.project.stage1.*;
+import edu.yu.cs.com1320.project.stage1.impl.*;
+import org.junit.jupiter.api.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+/*
+Example Tests:
+assertEquals - assertEquals(4, calculator.multiply(2, 2),"optional failure message");
+assertNotEquals - assertNotEquals(3, calculator.multiply(2, 2),"optional failure message");
+assertTrue - assertTrue('a' < 'b', () → "optional failure message");
+assertFalse - assertFalse('a' > 'b', () → "optional failure message");
+assertNotNull - assertNotNull(yourObject, "optional failure message");
+assertNull - assertNull(yourObject, "optional failure message");
+assertThrows - assertThrows(IllegalArgumentException.class, () -> user.setAge("23"));
+disable test - @Disabled/@Disabled("Why Disabled")
+*/
+
+public class DocumentStoreImplTest {
+
+    DocumentStoreImpl documentStore;
+    @BeforeEach
+    public void setUp() {
+        documentStore = new DocumentStoreImpl();
+    }
+
+    public static URI create(String str) {
+        try {
+            return new URI(str);
+        }
+        catch (URISyntaxException x) {
+            throw new IllegalArgumentException(x.getMessage(), x);
+        }
+    }
+
+    @DisplayName("Create Text Doc, Put Text Doc in HashTable, and Get It Back")
+    @Test
+    public void testOne() throws IOException {
+        String docText = "This is a Document String Text";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        Document d = documentStore.get(uri);
+        assertEquals(d, doc);
+    }
+
+    @DisplayName("Create Binary Doc, Put Text Doc in HashTable, and Get It Back")
+    @Test
+    public void testTwo() throws IOException {
+        byte[] initialArray = { 0, 1, 2 };
+        InputStream targetStream = new ByteArrayInputStream(initialArray);
+        URI uri = create("BinaryURI");
+        DocumentImpl doc = new DocumentImpl(uri, initialArray);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.BINARY);
+        Document d = documentStore.get(uri);
+        assertEquals(d, doc);
+    }
+
+    @DisplayName("Delete a Text Document From HashTable")
+    @Test
+    public void testThree() throws IOException {
+        String docText = "This is a Document String Text";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        documentStore.put(null, uri, DocumentStore.DocumentFormat.TXT);
+        Document d = documentStore.get(uri);
+        assertNull(d);
+    }
+
+    @DisplayName("Delete a Binary Document From HashTable")
+    @Test
+    public void testFour() throws IOException {
+        byte[] initialArray = { 0, 1, 2 };
+        InputStream targetStream = new ByteArrayInputStream(initialArray);
+        URI uri = create("BinaryURI");
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.BINARY);
+        documentStore.put(null, uri, DocumentStore.DocumentFormat.BINARY);
+        Document d = documentStore.get(uri);
+        assertNull(d);
+    }
+
+    @DisplayName("Put Null to HashTable for URI")
+    @Test
+    public void testFive() throws IOException {
+        byte[] initialArray = { 0, 1, 2 };
+        InputStream targetStream = new ByteArrayInputStream(initialArray);
+        URI uri = null;
+        assertThrowsExactly(IllegalArgumentException.class, () ->
+                documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.BINARY));
+    }
+
+    @DisplayName("Put Null to HashTable for Enum")
+    @Test
+    public void testSix() throws IOException {
+        byte[] initialArray = { 0, 1, 2 };
+        InputStream targetStream = new ByteArrayInputStream(initialArray);
+        URI uri = create("BinaryURI");
+        assertThrowsExactly(IllegalArgumentException.class, () ->
+                documentStore.put(targetStream, uri, null));
+    }
+
+    @DisplayName("Deleting a Text Returns Old Document's HashCode")
+    @Test
+    public void testSeven() throws IOException {
+        String docText = "This is a Document String Text";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        int oldHashcode = documentStore.put(null, uri, DocumentStore.DocumentFormat.TXT);
+        assertEquals(oldHashcode, doc.hashCode());
+    }
+
+    @DisplayName("Deleting a Text With No Old Document Returns 0")
+    @Test
+    public void testSevenAndAHalf() throws IOException {
+        String docText = "This is a Document String Text";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        int oldHashcode = documentStore.put(null, uri, DocumentStore.DocumentFormat.TXT);
+        assertEquals(0, oldHashcode);
+    }
+
+    @DisplayName("Deleting a Binary Returns Old Document's HashCode")
+    @Test
+    public void testEight() throws IOException {
+        byte[] initialArray = { 0, 1, 2 };
+        InputStream targetStream = new ByteArrayInputStream(initialArray);
+        URI uri = create("BinaryURI");
+        DocumentImpl doc = new DocumentImpl(uri, initialArray);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.BINARY);
+        int oldHashcode = documentStore.put(null, uri, DocumentStore.DocumentFormat.BINARY);
+        assertEquals(oldHashcode, doc.hashCode());
+    }
+
+    @DisplayName("Delete a Text Document From HashTable Using Delete Method")
+    @Test
+    public void testNine() throws IOException {
+        String docText = "This is a Document String Text";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        documentStore.delete(uri);
+        Document d = documentStore.get(uri);
+        assertNull(d);
+    }
+
+    @DisplayName("New Put in HashTable Will Return 0")
+    @Test
+    public void testTen() throws IOException {
+        String docText = "This is a Document String Text";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        int meep = documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        assertEquals(0, meep);
+    }
+
+    @DisplayName("Put Many Entries then Ask for One Back")
+    @Test
+    public void testEleven() throws IOException {
+        String docText = "This is a Document String Text";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "This is a Document String Text";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        String docText3 = "This is a Document String Text";
+        InputStream targetStream3 = new ByteArrayInputStream(docText3.getBytes());
+        URI uri3 = create("DocumentURI2");
+        documentStore.put(targetStream3, uri3, DocumentStore.DocumentFormat.TXT);
+        Document d = documentStore.get(uri2);
+        assertEquals(d, doc);
+    }
+
+    @DisplayName("Overwrite a Put")
+    @Test
+    public void testTwelve() throws IOException {
+        String docText = "This is a Document String Text";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc1 = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+
+        String docText2 = "This is a Different String Text";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+
+        DocumentImpl d = (DocumentImpl) documentStore.get(uri);
+        String meep = d.getDocumentTxt();
+        assertEquals(meep, docText2);
+    }
+
+    @DisplayName("Check DocumentImpl Equality")
+    @Test
+    public void testThirteen() throws IOException {
+        String docText = "This is a Document String Text";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc1 = new DocumentImpl(uri, docText);
+
+        String docText2 = "This is a Different Document String Text";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+
+        assertNotEquals(doc1, doc2);
+    }
+}

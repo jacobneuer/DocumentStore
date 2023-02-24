@@ -56,7 +56,7 @@ public class HashTableImpl<Key,Value> implements edu.yu.cs.com1320.project.HashT
         LinkedEntries list = (LinkedEntries) this.table[index];
         LinkedEntries.Node current = list.head;
         if (v == null) {
-            return deleteEntry(k, v);
+            return deleteEntry(k);
         }
         if (current == null) {
             list.addNode(putEntry);
@@ -64,11 +64,13 @@ public class HashTableImpl<Key,Value> implements edu.yu.cs.com1320.project.HashT
         }
         return finishPut(k, v);
     }
-    private Value deleteEntry(Key k, Value v){
+    private Value deleteEntry(Key k){
         int index = this.hashFunction(k);
-        Entry<Key, Value> putEntry = new Entry<>(k, v);
         LinkedEntries list = (LinkedEntries) this.table[index];
         LinkedEntries.Node current = list.head;
+        if (current == null) {
+            return null;
+        }
         Key currentKey = (Key) current.entry.key;
         if (currentKey.equals(k)) {
             Value old = (Value) current.entry.value;
