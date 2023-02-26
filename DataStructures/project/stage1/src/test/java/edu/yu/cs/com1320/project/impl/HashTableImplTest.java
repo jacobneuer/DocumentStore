@@ -1,6 +1,9 @@
 package edu.yu.cs.com1320.project.impl;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /*
@@ -79,7 +82,23 @@ public class HashTableImplTest {
 
     @DisplayName("Request a Null Key and Get Back Illegal Argument Exception")
     @Test
-    public void testSeven() {
+    public void testEight() {
         assertThrowsExactly(IllegalArgumentException.class, () -> hashTable.get(null));
+    }
+
+    @DisplayName("Testing ContainsKey Works Correctly")
+    @Test
+    public void testNine() {
+        hashTable.put(0, "Yeet");
+        hashTable.put(3, "Meep");
+        hashTable.put(5, "Hello");
+        hashTable.put(0, null);
+        assertTrue(hashTable.containsKey(3));
+    }
+
+    @DisplayName("Request a Null Key from ContainsKey")
+    @Test
+    public void testTen() {
+        assertThrowsExactly(NullPointerException.class, () -> hashTable.containsKey(null));
     }
 }

@@ -22,8 +22,6 @@ public class HashTableImpl<Key,Value> implements edu.yu.cs.com1320.project.HashT
         }
     }
     private Object[] table;
-    //hash function for keys - returns value between 0 and this.table.length-1
-    //Mask hashCode() so it’s positive
     private int hashFunction(Key key) {
         if (key != null) {
             return (key.hashCode() & 0x7fffffff) % this.table.length;
@@ -64,6 +62,43 @@ public class HashTableImpl<Key,Value> implements edu.yu.cs.com1320.project.HashT
         }
         return finishPut(k, v);
     }
+
+    @Override
+    public boolean containsKey(Key key) {
+        if (key == null) {
+            throw new NullPointerException("The Key You're Trying to Find is Null");
+        }
+        int index = this.hashFunction(key);
+        LinkedEntries list = (LinkedEntries) this.table[index];
+        LinkedEntries.Node current = list.head;
+        if (current == null) {
+            return false;
+        }
+        else {
+            return finishFindingKey(key);
+        }
+    }
+
+    private boolean finishFindingKey(Key key) {
+        int index = this.hashFunction(key);
+        LinkedEntries list = (LinkedEntries) this.table[index];
+        LinkedEntries.Node current = list.head;
+        Key currentKey = (Key) current.entry.key;
+        if (currentKey.equals(key)) {
+            return true;
+        }
+        while (current != null){
+            if (current.next != null) {
+                Key loopKey = (Key) current.next.entry.key;
+                if(loopKey.equals(key)) {
+                    return true;
+                }
+            }
+            current = current.next;
+        }
+        return false;
+    }
+
     private Value deleteEntry(Key k){
         int index = this.hashFunction(k);
         LinkedEntries list = (LinkedEntries) this.table[index];

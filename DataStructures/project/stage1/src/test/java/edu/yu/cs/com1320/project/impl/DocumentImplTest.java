@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 /*
 Example Tests:
@@ -50,9 +50,9 @@ public class DocumentImplTest {
     @DisplayName("Check Equality of Documents")
     @Test
     public void testTwo() {
-        URI newUri = create("Hello!");
+        URI newUri = create("Meep");
         String hello = "Hello!";
         DocumentImpl document2 = new DocumentImpl(newUri, hello);
-        assertEquals(document2, this.document);
+        assertNotEquals(document2, this.document);
     }
 }

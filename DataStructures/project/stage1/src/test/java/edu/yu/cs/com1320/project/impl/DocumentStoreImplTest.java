@@ -220,4 +220,5 @@ public class DocumentStoreImplTest {
 
         assertNotEquals(doc1, doc2);
     }
+
 }
