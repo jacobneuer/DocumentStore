@@ -10,14 +10,14 @@ public class DocumentImpl implements edu.yu.cs.com1320.project.stage1.Document {
     private byte[] byteArray;
 
     public DocumentImpl(URI uri, String txt){
-        if (uri == null || txt == null){
+        if (uri == null || txt == null || txt.equals("")){
             throw new IllegalArgumentException("URI or Text is Null");
         }
         this.uri = uri;
         this.documentText = txt;
     }
     public DocumentImpl(URI uri, byte[] binaryData) {
-        if (uri == null || binaryData == null){
+        if (uri == null || binaryData == null || binaryData.length == 0){
             throw new IllegalArgumentException("URI or Binary Data is Null");
         }
         this.uri = uri;

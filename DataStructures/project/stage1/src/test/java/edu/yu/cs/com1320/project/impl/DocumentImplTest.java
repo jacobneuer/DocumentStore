@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -55,4 +56,55 @@ public class DocumentImplTest {
         DocumentImpl document2 = new DocumentImpl(newUri, hello);
         assertNotEquals(document2, this.document);
     }
+
+    @DisplayName("Check That Null String Returns An Exception")
+    @Test
+    public void testThree() {
+        URI newUri = create("Meep");
+        String hello = null;
+        AtomicReference<DocumentImpl> document2 = null;
+        assertThrowsExactly(IllegalArgumentException.class, () ->
+                document2.set(new DocumentImpl(newUri, hello)));
+    }
+
+    @DisplayName("Check That Null Byte Array Returns An Exception")
+    @Test
+    public void testFour() {
+        URI newUri = create("Meep");
+        byte[] hello = null;
+        AtomicReference<DocumentImpl> document2 = null;
+        assertThrowsExactly(IllegalArgumentException.class, () ->
+                document2.set(new DocumentImpl(newUri, hello)));
+    }
+
+    @DisplayName("Check That Empty Byte Array Returns An Exception")
+    @Test
+    public void testFive() {
+        URI newUri = create("Meep");
+        byte[] hello = new byte[0];
+        AtomicReference<DocumentImpl> document2 = null;
+        assertThrowsExactly(IllegalArgumentException.class, () ->
+                document2.set(new DocumentImpl(newUri, hello)));
+    }
+
+    @DisplayName("Check That Empty String Returns An Exception")
+    @Test
+    public void testSix() {
+        URI newUri = create("Meep");
+        String hello = "";
+        AtomicReference<DocumentImpl> document2 = null;
+        assertThrowsExactly(IllegalArgumentException.class, () ->
+                document2.set(new DocumentImpl(newUri, hello)));
+    }
+
+    @DisplayName("Check That Empty URI Returns An Exception")
+    @Test
+    public void testSeven() {
+        URI newUri = null;
+        String hello = "meep";
+        AtomicReference<DocumentImpl> document2 = null;
+        assertThrowsExactly(IllegalArgumentException.class, () ->
+                document2.set(new DocumentImpl(newUri, hello)));
+    }
+
 }
