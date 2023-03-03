@@ -1,5 +1,6 @@
 package edu.yu.cs.com1320.project.impl;
 
+import edu.yu.cs.com1320.project.stage1.Document;
 import edu.yu.cs.com1320.project.stage1.impl.DocumentImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -51,10 +52,10 @@ public class DocumentImplTest {
     @DisplayName("Check Equality of Documents")
     @Test
     public void testTwo() {
-        URI newUri = create("Meep");
+        URI newUri = create("Hello!");
         String hello = "Hello!";
-        DocumentImpl document2 = new DocumentImpl(newUri, hello);
-        assertNotEquals(document2, this.document);
+        Document document2 = new DocumentImpl(newUri, hello);
+        assertEquals(document2, this.document);
     }
 
     @DisplayName("Check That Null String Returns An Exception")
