@@ -2,11 +2,34 @@ package edu.yu.cs.com1320.project.impl;
 
 public class HashTableImpl<Key,Value> implements edu.yu.cs.com1320.project.HashTable<Key, Value> {
     //constructor for NHT
+    private Object[] table;
+    private int capacity;
+    private int elements;
     public HashTableImpl() {
         this.table = new Object[5];
         for (int i = 0; i < 5; i++) {
             table[i] = new LinkedEntries();
         }
+        this.capacity = 5;
+    }
+    private void resize() {
+        this.capacity = capacity * 2;
+        Object[] newTable = new Object[capacity];
+        for (int i = 0; i < capacity; i++) {
+            newTable[i] = new LinkedEntries();
+        }
+        for (int i = 0; i < this.table.length; i++) {
+            LinkedEntries list = (LinkedEntries) this.table[i];
+            LinkedEntries.Node current = list.head;
+            while(current != null) {
+                int index = hashFunction((Key) current.entry.key);
+                LinkedEntries newList = (LinkedEntries) newTable[index];
+                Entry<Key, Value> putEntry = new Entry<>((Key)current.entry.key, (Value)current.entry.value);
+                newList.addNode(putEntry);
+                current = current.next;
+            }
+        }
+        this.table = newTable;
     }
     private class Entry<Key, Value> {
 
@@ -21,16 +44,18 @@ public class HashTableImpl<Key,Value> implements edu.yu.cs.com1320.project.HashT
             value = v;
         }
     }
-    private Object[] table;
     private int hashFunction(Key key) {
         if (key != null) {
-            return (key.hashCode() & 0x7fffffff) % this.table.length;
+            return (key.hashCode() & 0x7fffffff) % this.capacity;
         }
         throw new IllegalArgumentException("Can't Hash a Null Key");
     }
 
     @Override
     public Value get(Key k) {
+        if (k == null) {
+            return null;
+        }
         int index = this.hashFunction(k);
         LinkedEntries list = (LinkedEntries) this.table[index];
         LinkedEntries.Node current = list.head;
@@ -58,7 +83,15 @@ public class HashTableImpl<Key,Value> implements edu.yu.cs.com1320.project.HashT
         }
         if (current == null) {
             list.addNode(putEntry);
+            this.elements = this.elements + 1;
+            if (this.elements > this.table.length * 4) {
+                resize();
+            }
             return null;
+        }
+        this.elements = this.elements + 1;
+        if (this.elements > this.table.length * 4) {
+            resize();
         }
         return finishPut(k, v);
     }
@@ -110,6 +143,7 @@ public class HashTableImpl<Key,Value> implements edu.yu.cs.com1320.project.HashT
         if (currentKey.equals(k)) {
             Value old = (Value) current.entry.value;
             list.head = list.head.next;
+            this.elements = this.elements - 1;
             return old;
         }
         else {
@@ -119,6 +153,7 @@ public class HashTableImpl<Key,Value> implements edu.yu.cs.com1320.project.HashT
                     if(loopKey.equals(k)) {
                         Value old = (Value) current.next.entry.value;
                         current.next = current.next.next;
+                        this.elements = this.elements - 1;
                         return old;
                     }
                 }
