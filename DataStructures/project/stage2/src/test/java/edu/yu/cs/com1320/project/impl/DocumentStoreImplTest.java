@@ -221,7 +221,7 @@ public class DocumentStoreImplTest {
         assertNotEquals(doc1, doc2);
     }
 
-    @DisplayName("Test simple function of undo")
+    @DisplayName("Undo a New Put")
     @Test
     public void testFourteen() throws IOException {
         String docText = "This is a Document String Text";
@@ -234,4 +234,120 @@ public class DocumentStoreImplTest {
         assertNull(d);
     }
 
+    @DisplayName("Undo a Put that Replaces a Previously Inserted URI")
+    @Test
+    public void testFifteen() throws IOException {
+        String docText = "This is a Document String Text";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "This is a Different Document String Text";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        documentStore.undo();
+        Document d = documentStore.get(uri);
+        assertEquals(doc, d);
+    }
+
+    @DisplayName("Undo With Nothing to Undo")
+    @Test
+    public void testSixteen() throws IOException {
+        String docText = "This is a Document String Text";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "This is a Different Document String Text";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        documentStore.undo();
+        documentStore.undo();
+        assertThrowsExactly(IllegalStateException.class, () ->
+                documentStore.undo());
+    }
+    @DisplayName("Undo a Delete")
+    @Test
+    public void testSeventeen() throws IOException {
+        String docText = "This is a Document String Text";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        documentStore.delete(uri);
+        documentStore.undo();
+        assertEquals(doc, documentStore.get(uri));
+    }
+
+    @DisplayName("Undo an Action With the Given URI")
+    @Test
+    public void testEighteen() throws IOException {
+        String docText = "This is a Document String Text";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "This is a Different Document String Text";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        documentStore.undo(uri);
+        Document d = documentStore.get(uri);
+        assertNull(d);
+    }
+
+    @DisplayName("Search to Undo a Given URI that Does Not Exist in the Store")
+    @Test
+    public void testNineteen() throws IOException {
+        String docText = "This is a Document String Text";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "This is a Different Document String Text";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        assertThrowsExactly(IllegalStateException.class, () ->
+                documentStore.undo(uri2));
+    }
+
+    @DisplayName("Do a lot of Actions then Undo a Given URI's Action")
+    @Test
+    public void twenty() throws IOException {
+        String docText = "This is a Document String Text";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "This is a Different Document String Text";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        documentStore.put(null, uri, DocumentStore.DocumentFormat.TXT);
+        documentStore.put(null, uri2, DocumentStore.DocumentFormat.TXT);
+        InputStream targetStream3 = new ByteArrayInputStream(docText2.getBytes());
+        documentStore.put(targetStream3, uri2, DocumentStore.DocumentFormat.TXT);
+        documentStore.undo(uri2);
+        Document d = documentStore.get(uri2);
+        assertNull(d);
+    }
+    @DisplayName("Undo a New Put with Byte Array")
+    @Test
+    public void twentyOne() throws IOException {
+        byte[] initialArray = { 0, 1, 2 };
+        InputStream targetStream = new ByteArrayInputStream(initialArray);
+        URI uri = create("BinaryURI");
+        DocumentImpl doc = new DocumentImpl(uri, initialArray);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.BINARY);
+        documentStore.undo();
+        Document d = documentStore.get(uri);
+        assertNull(d);
+    }
 }

@@ -54,7 +54,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage2.Docum
 
     private int putText(InputStream input, URI uri) throws IOException {
         String text;
-        try{
+        try {
             text = new String(input.readAllBytes(), StandardCharsets.UTF_8);
         }
         catch (Exception e) {
@@ -64,8 +64,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage2.Docum
         DocumentImpl oldStringDoc = hashTable.put(uri, newStringDoc);
         if (oldStringDoc == null) {
             //Add undo function to the stack to delete the new document being added to the store
-            Function<URI, Boolean> deleteFunction = (x) ->
-            {
+            Function<URI, Boolean> deleteFunction = (x) -> {
                 this.hashTable.put(x, null);
                 return true;
             };
@@ -75,8 +74,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage2.Docum
         }
         else {
             //Add undo function to the stack to put back the old document associated with the URI
-            Function<URI, Boolean> replaceFunction = (x) ->
-            {
+            Function<URI, Boolean> replaceFunction = (x) -> {
                 this.hashTable.put(x, oldStringDoc);
                 return true;
             };
@@ -87,7 +85,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage2.Docum
     }
     private int putBinary(InputStream input, URI uri) throws IOException{
         byte[] bytes;
-        try{
+        try {
             bytes = input.readAllBytes();
         }
         catch (Exception e) {
@@ -97,8 +95,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage2.Docum
         DocumentImpl oldBinaryDoc = hashTable.put(uri, newBinaryDoc);
         if (oldBinaryDoc == null) {
             //Add undo function to the stack to delete the new document being added to the store
-            Function<URI, Boolean> deleteFunction = (x) ->
-            {
+            Function<URI, Boolean> deleteFunction = (x) -> {
                 this.hashTable.put(x, null);
                 return true;
             };
@@ -108,8 +105,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage2.Docum
         }
         else {
             //Add undo function to the stack to put back the old document associated with the URI
-            Function<URI, Boolean> replaceFunction = (x) ->
-            {
+            Function<URI, Boolean> replaceFunction = (x) -> {
                 this.hashTable.put(x, oldBinaryDoc);
                 return true;
             };
@@ -156,7 +152,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage2.Docum
     public void undo(URI uri) throws IllegalStateException {
         StackImpl<Command> tempStack = new StackImpl<>();
         //Search the stack to find the given URI while popping the frames into a temporary stack to not lose them
-        while (!this.stack.peek().getUri().equals(uri)) {
+        while (this.stack.peek() != null && !this.stack.peek().getUri().equals(uri)) {
             tempStack.push(this.stack.pop());
         }
         //URI has been found in the stack; Undo the frame
@@ -168,7 +164,10 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage2.Docum
             }
             return;
         }
-        //No URI was found in the frame
-        throw new IllegalStateException("No URI exists in the frame to undo");
+        //No URI was found in the frame so put the frames back in the stack and throw an exception
+        while (tempStack.peek() != null){
+            this.stack.push(tempStack.pop());
+        }
+        throw new IllegalStateException("No given URI exists in the frame to undo");
     }
 }
