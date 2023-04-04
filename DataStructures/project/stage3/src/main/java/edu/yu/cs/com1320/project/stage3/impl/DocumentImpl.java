@@ -1,8 +1,10 @@
 package edu.yu.cs.com1320.project.stage3.impl;
 
+import edu.yu.cs.com1320.project.HashTable;
+import edu.yu.cs.com1320.project.impl.HashTableImpl;
+
 import java.net.URI;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,7 +13,7 @@ public class DocumentImpl implements edu.yu.cs.com1320.project.stage3.Document {
     private URI uri;
     private String documentText;
     private byte[] byteArray;
-    private HashMap<String, Integer> wordMap;
+    private HashTable<String, Integer> wordMap;
 
     public DocumentImpl(URI uri, String txt){
         if (uri == null || txt == null || txt.equals("")){
@@ -19,7 +21,7 @@ public class DocumentImpl implements edu.yu.cs.com1320.project.stage3.Document {
         }
         this.uri = uri;
         this.documentText = txt;
-        this.wordMap = new HashMap<>();
+        this.wordMap = new HashTableImpl<>();
         String noPunctuation = txt.replaceAll("\\p{Punct}", "");
         String[] words = noPunctuation.split(" ");
         for(int i = 0; i < words.length; i++) {
@@ -100,6 +102,10 @@ public class DocumentImpl implements edu.yu.cs.com1320.project.stage3.Document {
 
     @Override
     public Set<String> getWords() {
+        if (this.documentText == null) {
+            Set<String> emptySet = new HashSet<>();
+            return emptySet;
+        }
         String noPunctuation = this.documentText.replaceAll("\\p{Punct}", "");
         String[] words = noPunctuation.split(" ");
         Set<String> distinctWords = new HashSet<>();

@@ -3,6 +3,7 @@ package edu.yu.cs.com1320.project.stage3.impl;
 import edu.yu.cs.com1320.project.Command;
 import edu.yu.cs.com1320.project.impl.HashTableImpl;
 import edu.yu.cs.com1320.project.impl.StackImpl;
+import edu.yu.cs.com1320.project.impl.TrieImpl;
 import edu.yu.cs.com1320.project.stage3.Document;
 import edu.yu.cs.com1320.project.stage3.DocumentStore;
 
@@ -18,9 +19,11 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage3.Docum
 
     private HashTableImpl<URI, DocumentImpl> hashTable;
     private StackImpl<Command> stack;
+    private TrieImpl<DocumentImpl> trie;
     public DocumentStoreImpl() {
         this.hashTable = new HashTableImpl<>();
         this.stack = new StackImpl<>();
+        this.trie = new TrieImpl<>();
     }
 
     @Override
