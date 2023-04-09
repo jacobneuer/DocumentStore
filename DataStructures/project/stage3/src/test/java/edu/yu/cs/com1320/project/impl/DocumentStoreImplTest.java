@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -349,5 +351,180 @@ public class DocumentStoreImplTest {
         documentStore.undo();
         Document d = documentStore.get(uri);
         assertNull(d);
+    }
+    @DisplayName("Undo a New Put with Byte Array")
+    @Test
+    public void twentyTwo() throws IOException {
+        String docText = "This is a Document String Text";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+    }
+    @DisplayName("Test Search Method")
+    @Test
+    public void twentyThree() throws IOException {
+        String docText = "I love Torah and I love Mitzvot";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "I also love cookies and cake";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        String docText3 = "love love love love";
+        InputStream targetStream3 = new ByteArrayInputStream(docText3.getBytes());
+        URI uri3 = create("DocumentURI3");
+        DocumentImpl doc3 = new DocumentImpl(uri3, docText3);
+        documentStore.put(targetStream3, uri3, DocumentStore.DocumentFormat.TXT);
+        String docText4 = "no Love over here";
+        InputStream targetStream4 = new ByteArrayInputStream(docText4.getBytes());
+        URI uri4 = create("DocumentURI4");
+        DocumentImpl doc4 = new DocumentImpl(uri4, docText4);
+        documentStore.put(targetStream4, uri4, DocumentStore.DocumentFormat.TXT);
+        List<Document> searchResults = documentStore.search("love");
+        for(Document d: searchResults){
+            System.out.println(d.getDocumentTxt());
+        }
+    }
+    @DisplayName("Test SearchByPrefix Method")
+    @Test
+    public void twentyFour() throws IOException {
+        String docText = "I love Torah and I love Mitzvot";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "I also love cookies and cake";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        String docText3 = "love love love love";
+        InputStream targetStream3 = new ByteArrayInputStream(docText3.getBytes());
+        URI uri3 = create("DocumentURI3");
+        DocumentImpl doc3 = new DocumentImpl(uri3, docText3);
+        documentStore.put(targetStream3, uri3, DocumentStore.DocumentFormat.TXT);
+        String docText4 = "no Love over here";
+        InputStream targetStream4 = new ByteArrayInputStream(docText4.getBytes());
+        URI uri4 = create("DocumentURI4");
+        DocumentImpl doc4 = new DocumentImpl(uri4, docText4);
+        documentStore.put(targetStream4, uri4, DocumentStore.DocumentFormat.TXT);
+        List<Document> searchResults = documentStore.searchByPrefix("l");
+        for(Document d: searchResults){
+            System.out.println(d.getDocumentTxt());
+        }
+    }
+    @DisplayName("Test DeleteAll Method")
+    @Test
+    public void twentyFive() throws IOException {
+        String docText = "I love Torah and I love Mitzvot";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "I also love cookies and cake";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        String docText3 = "love love love love";
+        InputStream targetStream3 = new ByteArrayInputStream(docText3.getBytes());
+        URI uri3 = create("DocumentURI3");
+        DocumentImpl doc3 = new DocumentImpl(uri3, docText3);
+        documentStore.put(targetStream3, uri3, DocumentStore.DocumentFormat.TXT);
+        String docText4 = "no Love over here";
+        InputStream targetStream4 = new ByteArrayInputStream(docText4.getBytes());
+        URI uri4 = create("DocumentURI4");
+        DocumentImpl doc4 = new DocumentImpl(uri4, docText4);
+        documentStore.put(targetStream4, uri4, DocumentStore.DocumentFormat.TXT);
+        Set<URI> deletedURIs = documentStore.deleteAll("love");
+        List<Document> searchResults = documentStore.search("love");
+        assert(searchResults.isEmpty());
+    }
+    @DisplayName("Test DeleteAllWithPrefix Method")
+    @Test
+    public void twentySix() throws IOException {
+        String docText = "I love Torah and I love Mitzvot";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "I also love cookies and cake";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        String docText3 = "love love love love";
+        InputStream targetStream3 = new ByteArrayInputStream(docText3.getBytes());
+        URI uri3 = create("DocumentURI3");
+        DocumentImpl doc3 = new DocumentImpl(uri3, docText3);
+        documentStore.put(targetStream3, uri3, DocumentStore.DocumentFormat.TXT);
+        String docText4 = "no Love over here";
+        InputStream targetStream4 = new ByteArrayInputStream(docText4.getBytes());
+        URI uri4 = create("DocumentURI4");
+        DocumentImpl doc4 = new DocumentImpl(uri4, docText4);
+        documentStore.put(targetStream4, uri4, DocumentStore.DocumentFormat.TXT);
+        Set<URI> deletedURIs = documentStore.deleteAllWithPrefix("c");
+        for(URI u: deletedURIs){
+            System.out.println(u);
+        }
+        List<Document> searchResults = documentStore.searchByPrefix("c");
+        assert(searchResults.isEmpty());
+    }
+    @DisplayName("Test Undo Method")
+    @Test
+    public void twentySeven() throws IOException {
+        String docText = "I love Torah and I love Mitzvot";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "I also love cookies and cake";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        Set<URI> deletedURIs = documentStore.deleteAllWithPrefix("c");
+        documentStore.undo();
+        List<Document> searchResults = documentStore.searchByPrefix("c");
+        for(Document d: searchResults){
+            System.out.println(d.getDocumentTxt());
+        }
+    }
+    @DisplayName("Test Undo(uri) Method")
+    @Test
+    public void twentyEight() throws IOException {
+        String docText = "I love Torah and I love Mitzvot";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "I also love cookies and cake";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        String docText3 = "love love love love";
+        InputStream targetStream3 = new ByteArrayInputStream(docText3.getBytes());
+        URI uri3 = create("DocumentURI3");
+        DocumentImpl doc3 = new DocumentImpl(uri3, docText3);
+        documentStore.put(targetStream3, uri3, DocumentStore.DocumentFormat.TXT);
+        String docText4 = "no Love over here";
+        InputStream targetStream4 = new ByteArrayInputStream(docText4.getBytes());
+        URI uri4 = create("DocumentURI4");
+        DocumentImpl doc4 = new DocumentImpl(uri4, docText4);
+        documentStore.put(targetStream4, uri4, DocumentStore.DocumentFormat.TXT);
+        Set<URI> deletedURIs = documentStore.deleteAllWithPrefix("l");
+        for(URI u: deletedURIs){
+            System.out.println(u);
+        }
+        documentStore.undo(uri2);
+        List<Document> searchResults = documentStore.searchByPrefix("L");
+        for(Document d: searchResults){
+            System.out.println(d.getDocumentTxt());
+        }
     }
 }

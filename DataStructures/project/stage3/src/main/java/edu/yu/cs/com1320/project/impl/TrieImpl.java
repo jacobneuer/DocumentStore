@@ -94,8 +94,16 @@ public class TrieImpl<Value> implements edu.yu.cs.com1320.project.Trie<Value> {
         if (prefix == null || comparator == null) {
             throw new IllegalArgumentException("Can't Get With Null Key or Comparator");
         }
-        List<Value> list = new LinkedList<>();
+        List<Value> list = new ArrayList<>();
         collectAllWithPrefixSorted(getNode(this.root, prefix, 0), prefix, list);
+        if(list.isEmpty()) {
+            return list;
+        }
+        //Getting rid of all the documents with multiple words that begin with the same prefix
+        Set<Value> set = new HashSet<>(list);
+        list.clear();
+        list.addAll(set);
+        //Sorting
         list.sort(comparator);
         return list;
     }

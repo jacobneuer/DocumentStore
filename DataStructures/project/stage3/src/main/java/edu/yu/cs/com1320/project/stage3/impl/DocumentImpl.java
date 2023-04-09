@@ -5,6 +5,7 @@ import edu.yu.cs.com1320.project.impl.HashTableImpl;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,7 +14,7 @@ public class DocumentImpl implements edu.yu.cs.com1320.project.stage3.Document {
     private URI uri;
     private String documentText;
     private byte[] byteArray;
-    private HashTable<String, Integer> wordMap;
+    private HashMap<String, Integer> wordMap;
 
     public DocumentImpl(URI uri, String txt){
         if (uri == null || txt == null || txt.equals("")){
@@ -21,7 +22,7 @@ public class DocumentImpl implements edu.yu.cs.com1320.project.stage3.Document {
         }
         this.uri = uri;
         this.documentText = txt;
-        this.wordMap = new HashTableImpl<>();
+        this.wordMap = new HashMap<>();
         String noPunctuation = txt.replaceAll("\\p{Punct}", "");
         String[] words = noPunctuation.split(" ");
         for(int i = 0; i < words.length; i++) {
