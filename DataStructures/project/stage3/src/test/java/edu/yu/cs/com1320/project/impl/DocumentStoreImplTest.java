@@ -522,7 +522,7 @@ public class DocumentStoreImplTest {
             System.out.println(u);
         }
         documentStore.undo(uri2);
-        List<Document> searchResults = documentStore.searchByPrefix("L");
+        List<Document> searchResults = documentStore.searchByPrefix("l");
         for(Document d: searchResults){
             System.out.println(d.getDocumentTxt());
         }
