@@ -1,7 +1,9 @@
-package edu.yu.cs.com1320.project.stage3.impl;
+package edu.yu.cs.com1320.project.stage4.impl;
 
 import edu.yu.cs.com1320.project.HashTable;
 import edu.yu.cs.com1320.project.impl.HashTableImpl;
+import edu.yu.cs.com1320.project.stage4.Document;
+import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -9,7 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-public class DocumentImpl implements edu.yu.cs.com1320.project.stage3.Document {
+public class DocumentImpl implements edu.yu.cs.com1320.project.stage4.Document {
 
     private URI uri;
     private String documentText;
@@ -96,4 +98,18 @@ public class DocumentImpl implements edu.yu.cs.com1320.project.stage3.Document {
         return distinctWords;
     }
 
+    @Override
+    public long getLastUseTime() {
+        return 0;
+    }
+
+    @Override
+    public void setLastUseTime(long timeInNanoseconds) {
+
+    }
+
+    @Override
+    public int compareTo(@NotNull Document o) {
+        return 0;
+    }
 }

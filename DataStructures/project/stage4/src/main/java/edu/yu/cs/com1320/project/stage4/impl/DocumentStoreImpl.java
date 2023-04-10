@@ -1,4 +1,4 @@
-package edu.yu.cs.com1320.project.stage3.impl;
+package edu.yu.cs.com1320.project.stage4.impl;
 
 import com.sun.jdi.Value;
 import edu.yu.cs.com1320.project.CommandSet;
@@ -7,8 +7,8 @@ import edu.yu.cs.com1320.project.Undoable;
 import edu.yu.cs.com1320.project.impl.HashTableImpl;
 import edu.yu.cs.com1320.project.impl.StackImpl;
 import edu.yu.cs.com1320.project.impl.TrieImpl;
-import edu.yu.cs.com1320.project.stage3.Document;
-import edu.yu.cs.com1320.project.stage3.DocumentStore;
+import edu.yu.cs.com1320.project.stage4.Document;
+import edu.yu.cs.com1320.project.stage4.DocumentStore;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
-public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage3.DocumentStore {
+public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.DocumentStore {
 
     private HashTableImpl<URI, DocumentImpl> hashTable;
     private StackImpl<Undoable> stack;
@@ -358,5 +358,15 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage3.Docum
         else {
             return deleteSingleDocument(deletedDocuments, deletedURIs);
         }
+    }
+
+    @Override
+    public void setMaxDocumentCount(int limit) {
+
+    }
+
+    @Override
+    public void setMaxDocumentBytes(int limit) {
+
     }
 }
