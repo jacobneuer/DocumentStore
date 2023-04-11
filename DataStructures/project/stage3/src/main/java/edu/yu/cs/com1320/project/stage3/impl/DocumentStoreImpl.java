@@ -235,7 +235,9 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage3.Docum
         else {
             CommandSet<URI> commandSet = (CommandSet<URI>) this.stack.pop();
             commandSet.undo(uri);
-            this.stack.push(commandSet);
+            if (commandSet.size() > 0) {
+                this.stack.push(commandSet);
+            }
         }
         //Put the temp stacks back on the stack
         while (tempStack.peek() != null) {
