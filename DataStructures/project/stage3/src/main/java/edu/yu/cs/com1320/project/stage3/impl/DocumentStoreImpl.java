@@ -346,7 +346,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage3.Docum
             this.stack.push(undoDelete);
             //Add the deleted document to a set of URIs to return and then delete the doc from the store
             deletedURIs.add(d.getKey());
-            delete(d.getKey());
+            hashTable.put(d.getKey(), null);
         }
         return deletedURIs;
     }

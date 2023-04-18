@@ -518,9 +518,7 @@ public class DocumentStoreImplTest {
         DocumentImpl doc4 = new DocumentImpl(uri4, docText4);
         documentStore.put(targetStream4, uri4, DocumentStore.DocumentFormat.TXT);
         documentStore.deleteAllWithPrefix("l");
-        documentStore.undo(uri2);
-        documentStore.undo(uri2);
-        documentStore.undo(uri2);
+        documentStore.undo();
         List<Document> searchResults = documentStore.searchByPrefix("l");
         for(Document d: searchResults){
             System.out.println(d.getDocumentTxt());
