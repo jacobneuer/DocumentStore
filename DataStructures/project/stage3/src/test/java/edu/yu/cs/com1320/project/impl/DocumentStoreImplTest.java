@@ -412,7 +412,7 @@ public class DocumentStoreImplTest {
         URI uri4 = create("DocumentURI4");
         DocumentImpl doc4 = new DocumentImpl(uri4, docText4);
         documentStore.put(targetStream4, uri4, DocumentStore.DocumentFormat.TXT);
-        List<Document> searchResults = documentStore.searchByPrefix("l");
+        List<Document> searchResults = documentStore.searchByPrefix("I");
         for(Document d: searchResults){
             System.out.println(d.getDocumentTxt());
         }
@@ -517,10 +517,9 @@ public class DocumentStoreImplTest {
         URI uri4 = create("DocumentURI4");
         DocumentImpl doc4 = new DocumentImpl(uri4, docText4);
         documentStore.put(targetStream4, uri4, DocumentStore.DocumentFormat.TXT);
-        Set<URI> deletedURIs = documentStore.deleteAllWithPrefix("l");
-        for(URI u: deletedURIs){
-            System.out.println(u);
-        }
+        documentStore.deleteAllWithPrefix("l");
+        documentStore.undo(uri2);
+        documentStore.undo(uri2);
         documentStore.undo(uri2);
         List<Document> searchResults = documentStore.searchByPrefix("l");
         for(Document d: searchResults){
