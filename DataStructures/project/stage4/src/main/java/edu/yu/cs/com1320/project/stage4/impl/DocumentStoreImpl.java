@@ -22,6 +22,8 @@ import java.util.function.Function;
 
 public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.DocumentStore {
 
+    private int maxDocumentCount;
+    private int maxDocumentBytes;
     private HashTableImpl<URI, DocumentImpl> hashTable;
     private StackImpl<Undoable> stack;
     private TrieImpl<Document> trie;
@@ -164,9 +166,10 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
 
     @Override
     public boolean delete(URI uri) {
+        //Remove document from the store
         DocumentImpl deletedDoc = hashTable.put(uri, null);
+        //If there's no old document being returned then we didn't do anything so there's nothing to undo
         if (deletedDoc == null) {
-            //If there's no old document being returned then we didn't do anything so there's nothing to undo
             return false;
         }
         //Else add undo function to allow the document being deleted to be put back into the store in the future
@@ -300,7 +303,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
     }
     @Override
     public Set<URI> deleteAll(String keyword) {
-        //Delete all the documents that include the given keyword from the trie
+        //First collect the documents that need to be deleted from the store
         Set<Document> deletedDocuments = this.trie.deleteAll(keyword);
         Set<URI> deletedURIs = new HashSet<>();
         if(deletedDocuments.size() > 1) {
@@ -324,6 +327,8 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
             };
             GenericCommand<URI> undoDelete = new GenericCommand<>(d.getKey(), putBackFunction);
             commandSet.addCommand(undoDelete);
+            //Delete all the words in each document that include the given keyword from the trie
+            trieDeletion((DocumentImpl) d);
             //Add the deleted documents to a set of URIs to return and then delete the doc from the store
             deletedURIs.add(d.getKey());
             this.hashTable.put(d.getKey(), null);
@@ -342,6 +347,8 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
             };
             GenericCommand<URI> undoDelete = new GenericCommand<>(d.getKey(), putBackFunction);
             this.stack.push(undoDelete);
+            //Delete all the words in each document that include the given keyword from the trie
+            trieDeletion((DocumentImpl) d);
             //Add the deleted document to a set of URIs to return and then delete the doc from the store
             deletedURIs.add(d.getKey());
             this.hashTable.put(d.getKey(), null);
@@ -350,6 +357,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
     }
     @Override
     public Set<URI> deleteAllWithPrefix(String keywordPrefix) {
+        //First collect the documents that need to be deleted from the store
         Set<Document> deletedDocuments = this.trie.deleteAllWithPrefix(keywordPrefix);
         Set<URI> deletedURIs = new HashSet<>();
         if(deletedDocuments.size() > 1) {
@@ -362,11 +370,11 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
 
     @Override
     public void setMaxDocumentCount(int limit) {
-
+        this.maxDocumentCount = limit;
     }
 
     @Override
     public void setMaxDocumentBytes(int limit) {
-
+        this.maxDocumentBytes = limit;
     }
 }

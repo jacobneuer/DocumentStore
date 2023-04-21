@@ -487,10 +487,19 @@ public class DocumentStoreImplTest {
         URI uri2 = create("DocumentURI2");
         DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
         documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
-        Set<URI> deletedURIs = documentStore.deleteAllWithPrefix("c");
+        Set<URI> deletedURIs = documentStore.deleteAll("love");
+        for(URI u: deletedURIs){
+            System.out.println(u);
+        }
+        List<Document> postDeleteSearchResults = documentStore.searchByPrefix("c");
+        for(Document d: postDeleteSearchResults){
+            System.out.println("Deleted:");
+            System.out.println(d.getDocumentTxt());
+        }
         documentStore.undo();
         List<Document> searchResults = documentStore.searchByPrefix("c");
         for(Document d: searchResults){
+            System.out.println("After Undone:");
             System.out.println(d.getDocumentTxt());
         }
     }

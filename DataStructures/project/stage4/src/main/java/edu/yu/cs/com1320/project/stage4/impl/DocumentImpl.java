@@ -11,8 +11,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-public class DocumentImpl implements edu.yu.cs.com1320.project.stage4.Document {
+public class DocumentImpl implements Document {
 
+    private long lastUseTime;
     private URI uri;
     private String documentText;
     private byte[] byteArray;
@@ -100,12 +101,12 @@ public class DocumentImpl implements edu.yu.cs.com1320.project.stage4.Document {
 
     @Override
     public long getLastUseTime() {
-        return 0;
+        return System.nanoTime();
     }
 
     @Override
     public void setLastUseTime(long timeInNanoseconds) {
-
+        this.lastUseTime = timeInNanoseconds;
     }
 
     @Override
