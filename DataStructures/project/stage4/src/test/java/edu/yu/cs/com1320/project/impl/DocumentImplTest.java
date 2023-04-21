@@ -167,5 +167,13 @@ public class DocumentImplTest {
         int count = document2.wordCount("Im");
         assertEquals(1, count);
     }
-
+    @DisplayName("Playing Around With NanoSeconds")
+    @Test
+    public void testThirteen() {
+        URI newUri = create("Hello!");
+        String hello = "How are you! doing today? I'm doing quite well, thank you for asking. you you";
+        Document document2 = new DocumentImpl(newUri, hello);
+        System.out.println(System.nanoTime());
+        System.out.println(System.nanoTime());
+    }
 }

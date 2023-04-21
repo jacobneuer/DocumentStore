@@ -5,6 +5,7 @@ import edu.yu.cs.com1320.project.CommandSet;
 import edu.yu.cs.com1320.project.GenericCommand;
 import edu.yu.cs.com1320.project.Undoable;
 import edu.yu.cs.com1320.project.impl.HashTableImpl;
+import edu.yu.cs.com1320.project.impl.MinHeapImpl;
 import edu.yu.cs.com1320.project.impl.StackImpl;
 import edu.yu.cs.com1320.project.impl.TrieImpl;
 import edu.yu.cs.com1320.project.stage4.Document;
@@ -27,10 +28,12 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
     private HashTableImpl<URI, DocumentImpl> hashTable;
     private StackImpl<Undoable> stack;
     private TrieImpl<Document> trie;
+    private MinHeapImpl<Document> minHeap;
     public DocumentStoreImpl() {
         this.hashTable = new HashTableImpl<>();
         this.stack = new StackImpl<>();
         this.trie = new TrieImpl<>();
+        this.minHeap = new MinHeapImpl<>();
     }
 
     @Override
@@ -84,6 +87,10 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         trieAddition(newStringDoc);
         //Put the new document into the store
         DocumentImpl oldStringDoc = hashTable.put(uri, newStringDoc);
+        //Update the last time using the document then put it into the heap
+        newStringDoc.setLastUseTime(System.nanoTime());
+        this.minHeap.insert(newStringDoc);
+        //Create undo situation depending on if it is a new put or a replacement put
         if (oldStringDoc == null) {
             return newPutUndo(uri, newStringDoc);
         }
@@ -138,6 +145,10 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         }
         DocumentImpl newBinaryDoc = new DocumentImpl(uri, bytes);
         DocumentImpl oldBinaryDoc = hashTable.put(uri, newBinaryDoc);
+        //Update the last time using the document
+        newBinaryDoc.setLastUseTime(System.nanoTime());
+        this.minHeap.insert(newBinaryDoc);
+        //Create undo depending on if this is a new binary document or replacing an old one
         if (oldBinaryDoc == null) {
             //Add undo function to the stack to delete the new document being added to the store
             Function<URI, Boolean> deleteFunction = (x) -> {
@@ -161,7 +172,11 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
     }
     @Override
     public Document get(URI uri) {
-        return hashTable.get(uri);
+        Document getDocument = this.hashTable.get(uri);
+        //Update last time using the document
+        getDocument.setLastUseTime(System.nanoTime());
+        this.minHeap.reHeapify(getDocument);
+        return getDocument;
     }
 
     @Override

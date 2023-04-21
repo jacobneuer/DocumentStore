@@ -101,7 +101,7 @@ public class DocumentImpl implements Document {
 
     @Override
     public long getLastUseTime() {
-        return System.nanoTime();
+        return this.lastUseTime;
     }
 
     @Override
@@ -110,7 +110,13 @@ public class DocumentImpl implements Document {
     }
 
     @Override
-    public int compareTo(@NotNull Document o) {
+    public int compareTo(@NotNull Document d) {
+        if (this.lastUseTime > d.getLastUseTime()) {
+            return 1;
+        }
+        if (this.lastUseTime < d.getLastUseTime()) {
+            return -1;
+        }
         return 0;
     }
 }

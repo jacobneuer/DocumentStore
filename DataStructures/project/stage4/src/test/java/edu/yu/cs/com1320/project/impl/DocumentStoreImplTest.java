@@ -29,9 +29,11 @@ disable test - @Disabled/@Disabled("Why Disabled")
 public class DocumentStoreImplTest {
 
     DocumentStoreImpl documentStore;
+    MinHeapImpl<Document> minHeap;
     @BeforeEach
     public void setUp() {
-        documentStore = new DocumentStoreImpl();
+        this.documentStore = new DocumentStoreImpl();
+        this.minHeap = new MinHeapImpl<>();
     }
 
     public static URI create(String str) {
@@ -535,5 +537,15 @@ public class DocumentStoreImplTest {
         for(Document d: searchResults){
             System.out.println(d.getDocumentTxt());
         }
+    }
+    @DisplayName("Test Put")
+    @Test
+    public void twentyNine() throws IOException {
+        String docText = "I love Torah and I love Mitzvot";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+
     }
 }
