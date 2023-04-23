@@ -69,6 +69,23 @@ public class DocumentImpl implements Document {
         return result;
     }
     @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (this.getClass() != obj.getClass()) {
+            return false;
+        }
+        DocumentImpl otherDoc = (DocumentImpl) obj;
+        if(hashCode() == otherDoc.hashCode()){
+            return true;
+        }
+        return false;
+    }
+    @Override
     public int wordCount(String word) {
         //If document is a String document
         if(this.byteArray == null) {

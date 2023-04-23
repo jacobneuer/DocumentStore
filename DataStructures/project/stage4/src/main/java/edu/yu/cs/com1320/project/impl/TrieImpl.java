@@ -135,7 +135,7 @@ public class TrieImpl<Value> implements edu.yu.cs.com1320.project.Trie<Value> {
         }
         if (x.val != null) {
             set.addAll(x.val);
-            x.val = null;
+            x.val.clear();
         }
         for (char c = 0; c < alphabetSize; c++) {
             x.links[c] = deleteAllWithPrefixSorted(x.links[c], prefix + c, set);
@@ -170,7 +170,7 @@ public class TrieImpl<Value> implements edu.yu.cs.com1320.project.Trie<Value> {
         //we're at the node to delete - add the value to the set and set the val to null
         if (depth == key.length()) {
             values.addAll(x.val);
-            x.val = null;
+            x.val.clear();
         }
         //continue down the trie to the target node
         else {

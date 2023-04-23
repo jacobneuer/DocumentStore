@@ -110,4 +110,24 @@ public class MinHeapImplTest {
         five = 1;
         this.minHeap.reHeapify(five);
     }
+    @DisplayName("Test ReHeapify")
+    @Test
+    public void testSevenAndAHalf() {
+        MinHeapImpl<String> stringMinHeap;
+        Integer one = 7;
+        this.minHeap.insert(one);
+        Integer two = 2;
+        this.minHeap.insert(two);
+        Integer three = 3;
+        this.minHeap.insert(three);
+        Integer four = 4;
+        this.minHeap.insert(four);
+        Integer five = 5;
+        this.minHeap.insert(five);
+        Integer removed = this.minHeap.remove();
+        assertEquals(2, removed);
+        System.out.println(this.minHeap.getArrayIndex(five));
+        five = 1;
+        this.minHeap.reHeapify(five);
+    }
 }
