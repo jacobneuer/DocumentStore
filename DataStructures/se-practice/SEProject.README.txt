@@ -1,17 +1,27 @@
-﻿Jacob Neuer, Natan Rifkind
+Jacob Neuer, Natan Rifkind
 
 
 Class Schedule Generator 
 
 
-Selecting a course schedule can be a mess. There are a number of factors to consider which can all be at conflict with one another. Timing, requirements, credits, and rigor are all factors that need to be considered when selecting a productive schedule. Our program allows the user to generate his schedule with ease, relieving hours of work with the press of a single button.
+Selecting a course schedule can be a mess. There are a number of factors to consider which 
+can all be at conflict with one another. Timing, requirements, credits, and rigor are all 
+factors that need to be considered when selecting a productive schedule. Our program 
+allows the user to generate his schedule with ease, relieving hours of work with the press 
+of a single button.
 
 
-This program is meant for college students selecting classes while balancing scheduling, prerequisites, credits, and major requirements.
+This program is meant for college students selecting classes while balancing scheduling, 
+prerequisites, credits, and major requirements.
 
 
 Our software provides the ability to receive a pre-made schedule that takes into account
 the aforementioned factors.
 
 
-The user begins by inputting his basic information - major, classes already taken, and maximum and minimum number of credits allowed. Next, the user will be presented with a number of potential factors that he can select and edit at his disposal, such as the number of credits he wishes to take, the time he wishes to take such classes, which classes must be taken in the coming semester, which core requirements he would like to fulfill, difficulty of course, likeability of professor.
+The user begins by inputting his basic information - major, classes already taken, and 
+maximum and minimum number of credits allowed. Next, the user will be presented with a 
+number of potential factors that he can select and edit at his disposal, such as the 
+number of credits he wishes to take, the time he wishes to take such classes, which 
+classes must be taken in the coming semester, which core requirements he would like to 
+fulfill, difficulty of course, likability of professor.
