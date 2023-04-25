@@ -548,4 +548,292 @@ public class DocumentStoreImplTest {
         documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
 
     }
+    @DisplayName("Test Max Document Count")
+    @Test
+    public void Thirty() throws IOException {
+        String docText = "I love Torah and I love Mitzvot";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        documentStore.setMaxDocumentCount(0);
+        Document d = documentStore.get(uri);
+        assertNull(d);
+    }
+    @DisplayName("Test Max Document Count Deleted the Oldest Ones")
+    @Test
+    public void thirtyOne() throws IOException {
+        String docText = "I love Torah and I love Mitzvot";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "I also love cookies and cake";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        String docText3 = "love love love love";
+        InputStream targetStream3 = new ByteArrayInputStream(docText3.getBytes());
+        URI uri3 = create("DocumentURI3");
+        DocumentImpl doc3 = new DocumentImpl(uri3, docText3);
+        documentStore.put(targetStream3, uri3, DocumentStore.DocumentFormat.TXT);
+        String docText4 = "no Love over here";
+        InputStream targetStream4 = new ByteArrayInputStream(docText4.getBytes());
+        URI uri4 = create("DocumentURI4");
+        DocumentImpl doc4 = new DocumentImpl(uri4, docText4);
+        documentStore.put(targetStream4, uri4, DocumentStore.DocumentFormat.TXT);
+        documentStore.setMaxDocumentCount(2);
+        Document d = documentStore.get(uri);
+        assertNull(d);
+        Document d2 = documentStore.get(uri2);
+        assertNull(d2);
+        Document d3 = documentStore.get(uri3);
+        Document d4 = documentStore.get(uri4);
+        assertEquals(doc3, d3);
+        assertEquals(doc4, d4);
+    }
+    @DisplayName("Test that Get Updates the Time")
+    @Test
+    public void thirtyTwo() throws IOException {
+        String docText = "I love Torah and I love Mitzvot";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "I also love cookies and cake";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        String docText3 = "love love love love";
+        InputStream targetStream3 = new ByteArrayInputStream(docText3.getBytes());
+        URI uri3 = create("DocumentURI3");
+        DocumentImpl doc3 = new DocumentImpl(uri3, docText3);
+        documentStore.put(targetStream3, uri3, DocumentStore.DocumentFormat.TXT);
+        String docText4 = "no Love over here";
+        InputStream targetStream4 = new ByteArrayInputStream(docText4.getBytes());
+        URI uri4 = create("DocumentURI4");
+        DocumentImpl doc4 = new DocumentImpl(uri4, docText4);
+        documentStore.put(targetStream4, uri4, DocumentStore.DocumentFormat.TXT);
+        documentStore.get(uri);
+        documentStore.setMaxDocumentCount(3);
+        Document d = documentStore.get(uri2);
+        assertNull(d);
+    }
+    @DisplayName("Test that Search Updates the Document Times")
+    @Test
+    public void thirtyThree() throws IOException {
+        String docText = "I love Torah and I love Mitzvot";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "I also love cookies and cake";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        String docText3 = "love love love love";
+        InputStream targetStream3 = new ByteArrayInputStream(docText3.getBytes());
+        URI uri3 = create("DocumentURI3");
+        DocumentImpl doc3 = new DocumentImpl(uri3, docText3);
+        documentStore.put(targetStream3, uri3, DocumentStore.DocumentFormat.TXT);
+        String docText4 = "no Love over here";
+        InputStream targetStream4 = new ByteArrayInputStream(docText4.getBytes());
+        URI uri4 = create("DocumentURI4");
+        DocumentImpl doc4 = new DocumentImpl(uri4, docText4);
+        documentStore.put(targetStream4, uri4, DocumentStore.DocumentFormat.TXT);
+        documentStore.search("love");
+        documentStore.setMaxDocumentCount(3);
+        Document d = documentStore.get(uri4);
+        assertNull(d);
+    }
+    @DisplayName("Test that Search With Prefix Updates the Document Times")
+    @Test
+    public void thirtyFour() throws IOException {
+        String docText = "I love Torah and I love Mitzvot";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "I also love cookies and cake";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        String docText3 = "love love love love";
+        InputStream targetStream3 = new ByteArrayInputStream(docText3.getBytes());
+        URI uri3 = create("DocumentURI3");
+        DocumentImpl doc3 = new DocumentImpl(uri3, docText3);
+        documentStore.put(targetStream3, uri3, DocumentStore.DocumentFormat.TXT);
+        String docText4 = "no Love over here";
+        InputStream targetStream4 = new ByteArrayInputStream(docText4.getBytes());
+        URI uri4 = create("DocumentURI4");
+        DocumentImpl doc4 = new DocumentImpl(uri4, docText4);
+        documentStore.put(targetStream4, uri4, DocumentStore.DocumentFormat.TXT);
+        documentStore.searchByPrefix("love");
+        documentStore.setMaxDocumentCount(3);
+        Document d = documentStore.get(uri4);
+        assertNull(d);
+    }
+    @DisplayName("Test Max Memory Count")
+    @Test
+    public void thirtyFive() throws IOException {
+        String docText = "I love Torah and I love Mitzvot";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        int uriMemory = doc.getDocumentTxt().getBytes().length;
+        System.out.println(uriMemory);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        documentStore.setMaxDocumentBytes(0);
+        Document d = documentStore.get(uri);
+        assertNull(d);
+    }
+    @DisplayName("Test Max Memory Deletes the Oldest Ones")
+    @Test
+    public void thirtySix() throws IOException {
+        String docText = "I love Torah and I love Mitzvot";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        int uriMemory = doc.getDocumentTxt().getBytes().length;
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "I also love cookies and cake";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        int uri2Memory = doc2.getDocumentTxt().getBytes().length;
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        String docText3 = "love love love love";
+        InputStream targetStream3 = new ByteArrayInputStream(docText3.getBytes());
+        URI uri3 = create("DocumentURI3");
+        DocumentImpl doc3 = new DocumentImpl(uri3, docText3);
+        int uri3Memory = doc3.getDocumentTxt().getBytes().length;
+        documentStore.put(targetStream3, uri3, DocumentStore.DocumentFormat.TXT);
+        String docText4 = "no Love over here";
+        InputStream targetStream4 = new ByteArrayInputStream(docText4.getBytes());
+        URI uri4 = create("DocumentURI4");
+        DocumentImpl doc4 = new DocumentImpl(uri4, docText4);
+        int uri4Memory = doc4.getDocumentTxt().getBytes().length;
+        documentStore.put(targetStream4, uri4, DocumentStore.DocumentFormat.TXT);
+        documentStore.setMaxDocumentBytes(63);
+        Document d = documentStore.get(uri);
+        assertNull(d);
+        Document d2 = documentStore.get(uri2);
+        assertNull(d2);
+        Document d3 = documentStore.get(uri3);
+        Document d4 = documentStore.get(uri4);
+        assertEquals(doc3, d3);
+        assertEquals(doc4, d4);
+    }
+    @DisplayName("Test that Get Updates the Time")
+    @Test
+    public void thirtySeven() throws IOException {
+        String docText = "I love Torah and I love Mitzvot";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "I also love cookies and cake";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        String docText3 = "love love love love";
+        InputStream targetStream3 = new ByteArrayInputStream(docText3.getBytes());
+        URI uri3 = create("DocumentURI3");
+        DocumentImpl doc3 = new DocumentImpl(uri3, docText3);
+        documentStore.put(targetStream3, uri3, DocumentStore.DocumentFormat.TXT);
+        String docText4 = "no Love over here";
+        InputStream targetStream4 = new ByteArrayInputStream(docText4.getBytes());
+        URI uri4 = create("DocumentURI4");
+        DocumentImpl doc4 = new DocumentImpl(uri4, docText4);
+        documentStore.put(targetStream4, uri4, DocumentStore.DocumentFormat.TXT);
+        documentStore.get(uri);
+        documentStore.setMaxDocumentBytes(65);
+        Document d = documentStore.get(uri2);
+        assertNull(d);
+    }
+    @DisplayName("Test that Search Updates the Document Times")
+    @Test
+    public void thirtyEight() throws IOException {
+        String docText = "I love Torah and I love Mitzvot";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "I also love cookies and cake";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        String docText3 = "love love love love";
+        InputStream targetStream3 = new ByteArrayInputStream(docText3.getBytes());
+        URI uri3 = create("DocumentURI3");
+        DocumentImpl doc3 = new DocumentImpl(uri3, docText3);
+        documentStore.put(targetStream3, uri3, DocumentStore.DocumentFormat.TXT);
+        String docText4 = "no Love over here";
+        InputStream targetStream4 = new ByteArrayInputStream(docText4.getBytes());
+        URI uri4 = create("DocumentURI4");
+        DocumentImpl doc4 = new DocumentImpl(uri4, docText4);
+        documentStore.put(targetStream4, uri4, DocumentStore.DocumentFormat.TXT);
+        documentStore.search("love");
+        documentStore.setMaxDocumentBytes(65);
+        Document d = documentStore.get(uri4);
+        assertNull(d);
+    }
+    @DisplayName("Test that Search With Prefix Updates the Document Times")
+    @Test
+    public void thirtyNine() throws IOException {
+        String docText = "I love Torah and I love Mitzvot";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "I also love cookies and cake";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        String docText3 = "love love love love";
+        InputStream targetStream3 = new ByteArrayInputStream(docText3.getBytes());
+        URI uri3 = create("DocumentURI3");
+        DocumentImpl doc3 = new DocumentImpl(uri3, docText3);
+        documentStore.put(targetStream3, uri3, DocumentStore.DocumentFormat.TXT);
+        String docText4 = "no Love over here";
+        InputStream targetStream4 = new ByteArrayInputStream(docText4.getBytes());
+        URI uri4 = create("DocumentURI4");
+        DocumentImpl doc4 = new DocumentImpl(uri4, docText4);
+        documentStore.put(targetStream4, uri4, DocumentStore.DocumentFormat.TXT);
+        documentStore.searchByPrefix("love");
+        documentStore.setMaxDocumentBytes(65);
+        Document d = documentStore.get(uri4);
+        assertNull(d);
+    }
+    @DisplayName("Test Max Document Count Works After Undo")
+    @Test
+    public void Forty() throws IOException {
+        String docText = "I love Torah and I love Mitzvot";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "I also love cookies and cake";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        String docText3 = "love love love love";
+        InputStream targetStream3 = new ByteArrayInputStream(docText3.getBytes());
+        URI uri3 = create("DocumentURI3");
+        DocumentImpl doc3 = new DocumentImpl(uri3, docText3);
+        documentStore.put(targetStream3, uri3, DocumentStore.DocumentFormat.TXT);
+        documentStore.delete(uri2);
+        documentStore.undo();
+        documentStore.setMaxDocumentCount(2);
+        Document test = documentStore.get(uri);
+        assertNull(test);
+    }
 }

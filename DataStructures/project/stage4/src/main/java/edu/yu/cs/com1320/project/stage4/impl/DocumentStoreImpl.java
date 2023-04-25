@@ -75,6 +75,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
             Function<URI, Boolean> putBackFunction = (x) ->
             {
                 this.hashTable.put(x, deletedDoc);
+                this.documentInventory = this.documentInventory + 1;
                 //Update the memory
                 if (deletedDoc.getDocumentTxt() == null) {
                     int documentStorage = deletedDoc.getDocumentBinaryData().length;
@@ -143,6 +144,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         DocumentImpl oldDoc = this.hashTable.put(uri, newStringDoc);
         //Update the memory of deleting the old document if there was one
         if (oldDoc != null) {
+            this.documentInventory = this.documentInventory - 1;
             if (oldDoc.getDocumentTxt() == null) {
                 int oldDocumentStorage = oldDoc.getDocumentBinaryData().length;
                 this.memoryMap.remove(oldDoc);
@@ -171,6 +173,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         //Creates an Undo function to delete the new document that was put in the store
         Function<URI, Boolean> deleteFunction = (x) -> {
             this.hashTable.put(x, null);
+            this.documentInventory = this.documentInventory - 1;
             //Update memory
             if (newStringDoc.getDocumentTxt() == null) {
                 int oldDocumentStorage = newStringDoc.getDocumentBinaryData().length;
@@ -263,6 +266,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         DocumentImpl oldBinaryDoc = this.hashTable.put(uri, newBinaryDoc);
         //Update storage of old binary document
         if (oldBinaryDoc != null) {
+            this.documentInventory = this.documentInventory - 1;
             if (oldBinaryDoc.getDocumentTxt() == null) {
                 int oldDocumentStorage = oldBinaryDoc.getDocumentBinaryData().length;
                 this.memoryMap.remove(oldBinaryDoc);
@@ -283,6 +287,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
             //Add undo function to the stack to delete the new document being added to the store
             Function<URI, Boolean> deleteFunction = (x) -> {
                 this.hashTable.put(x, null);
+                this.documentInventory = this.documentInventory - 1;
                 removeFromHeap(newBinaryDoc);
                 //Update the memory
                 this.memoryMap.remove(newBinaryDoc);
@@ -352,6 +357,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         Function<URI, Boolean> putBackFunction = (x) ->
         {
             this.hashTable.put(x, deletedDoc);
+            this.documentInventory = this.documentInventory + 1;
             trieAddition(deletedDoc);
             //Update memory
             if (deletedDoc.getDocumentTxt() == null) {
@@ -453,8 +459,9 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         };
         List<Document> documents = this.trie.getAllSorted(keyword, comparator);
         //Update last time using each of the documents
+        long updateTime = System.nanoTime();
         for(Document d: documents) {
-            d.setLastUseTime(System.nanoTime());
+            d.setLastUseTime(updateTime);
             this.minHeap.reHeapify(d);
         }
         return documents;
@@ -465,8 +472,9 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         Comparator<Document> comparator = searchByPrefixComparator(keywordPrefix);
         List<Document> documents = this.trie.getAllWithPrefixSorted(keywordPrefix, comparator);
         //Update last time using each of the documents
+        long updateTime = System.nanoTime();
         for(Document d: documents) {
-            d.setLastUseTime(System.nanoTime());
+            d.setLastUseTime(updateTime);
             this.minHeap.reHeapify(d);
         }
         return documents;
@@ -532,10 +540,12 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
                 this.memoryMap.remove(d);
                 this.memoryStorage = this.memoryStorage - documentStorage;
             }
+            //Create undo functions
             Function<URI, Boolean> putBackFunction = (x) ->
             {
                 DocumentImpl implDeletedDoc = (DocumentImpl) d;
                 this.hashTable.put(x, implDeletedDoc);
+                this.documentInventory = this.documentInventory + 1;
                 trieAddition(implDeletedDoc);
                 //Update memory
                 if (d.getDocumentTxt() == null) {
@@ -584,6 +594,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
             {
                 DocumentImpl implDeletedDoc = (DocumentImpl) d;
                 this.hashTable.put(x, implDeletedDoc);
+                this.documentInventory = this.documentInventory + 1;
                 trieAddition(implDeletedDoc);
                 //Update memory
                 if (d.getDocumentTxt() == null) {
@@ -628,6 +639,9 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
 
     @Override
     public void setMaxDocumentCount(int limit) {
+        if(limit < 0) {
+            throw new IllegalArgumentException("Can't set a max document level of less than 0");
+        }
         this.maxDocumentCount = limit;
         clearUpDocuments();
     }
@@ -655,6 +669,9 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
     }
     @Override
     public void setMaxDocumentBytes(int limit) {
+        if(limit < 0) {
+            throw new IllegalArgumentException("Can't set a memory limit of less than 0");
+        }
         this.maxDocumentBytes = limit;
         clearUpDocuments();
     }

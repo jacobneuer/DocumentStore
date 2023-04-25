@@ -127,7 +127,10 @@ public class DocumentImpl implements Document {
     }
 
     @Override
-    public int compareTo(@NotNull Document d) {
+    public int compareTo(Document d) {
+        if (d == null) {
+            throw new NullPointerException("Can't compare a document to a null value");
+        }
         if (this.lastUseTime > d.getLastUseTime()) {
             return 1;
         }
