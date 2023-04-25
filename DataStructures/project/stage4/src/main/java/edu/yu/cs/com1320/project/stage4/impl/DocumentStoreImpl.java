@@ -20,8 +20,8 @@ import java.util.function.Function;
 
 public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.DocumentStore {
 
-    private int maxDocumentCount;
-    private int maxDocumentBytes;
+    private Integer maxDocumentCount;
+    private Integer maxDocumentBytes;
     private int documentInventory = 0;
     private int memoryStorage = 0;
     private HashTableImpl<URI, DocumentImpl> hashTable;
@@ -90,6 +90,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
                 //Update last time using the document
                 deletedDoc.setLastUseTime(System.nanoTime());
                 this.minHeap.insert(deletedDoc);
+                clearUpDocuments();
                 return true;
             };
             GenericCommand<URI> undoDelete = new GenericCommand<>(uri, putBackFunction);
@@ -156,6 +157,8 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         //Update the last time using the document then put it into the heap
         newStringDoc.setLastUseTime(System.nanoTime());
         this.minHeap.insert(newStringDoc);
+        //Update storage/memory
+        clearUpDocuments();
         //Create undo situation depending on if it is a new put or a replacement put
         if (oldDoc == null) {
             return newPutUndo(uri, newStringDoc);
@@ -222,6 +225,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
                 this.memoryStorage = this.memoryStorage - oldDocumentStorage;
             }
             removeFromHeap(newStringDoc);
+            clearUpDocuments();
             return true;
         };
         GenericCommand<URI> undoReplacePut = new GenericCommand<>(uri, replaceFunction);
@@ -273,6 +277,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         //Update the last time using the document
         newBinaryDoc.setLastUseTime(System.nanoTime());
         this.minHeap.insert(newBinaryDoc);
+        clearUpDocuments();
         //Create undo depending on if this is a new binary document or replacing an old one
         if (oldBinaryDoc == null) {
             //Add undo function to the stack to delete the new document being added to the store
@@ -303,6 +308,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
                 //Update the old binary document's last use time and put it back in the heap
                 oldBinaryDoc.setLastUseTime(System.nanoTime());
                 this.minHeap.insert(oldBinaryDoc);
+                clearUpDocuments();
                 return true;
             };
             GenericCommand<URI> undoReplacePut = new GenericCommand<>(uri, replaceFunction);
@@ -360,6 +366,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
             }
             deletedDoc.setLastUseTime(System.nanoTime());
             this.minHeap.insert(deletedDoc);
+            clearUpDocuments();
             return true;
         };
         GenericCommand<URI> undoDelete = new GenericCommand<>(uri, putBackFunction);
@@ -543,6 +550,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
                 }
                 d.setLastUseTime(System.nanoTime());
                 this.minHeap.insert(d);
+                clearUpDocuments();
                 return true;
             };
             GenericCommand<URI> undoDelete = new GenericCommand<>(d.getKey(), putBackFunction);
@@ -590,6 +598,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
                 }
                 d.setLastUseTime(System.nanoTime());
                 this.minHeap.insert(d);
+                clearUpDocuments();
                 return true;
             };
             GenericCommand<URI> undoDelete = new GenericCommand<>(d.getKey(), putBackFunction);
@@ -619,14 +628,34 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
 
     @Override
     public void setMaxDocumentCount(int limit) {
-        while (this.documentInventory > limit) {
-            delete(this.minHeap.remove().getKey());
-        }
         this.maxDocumentCount = limit;
+        clearUpDocuments();
     }
-
+    private void clearUpDocuments() {
+        //If number of documents are full then remove until space is cleared
+        if(this.maxDocumentCount != null) {
+            while(this.documentInventory > this.maxDocumentCount) {
+                Document deletedDoc = this.minHeap.remove();
+                this.hashTable.put(deletedDoc.getKey(), null);
+                this.documentInventory = this.documentInventory - 1;
+                this.memoryStorage = this.memoryStorage - this.memoryMap.get(deletedDoc);
+                this.memoryMap.remove(deletedDoc);
+            }
+        }
+        //If storage is full then delete documents until there's enough memory
+        if(this.maxDocumentBytes != null) {
+            while(this.memoryStorage > this.maxDocumentBytes) {
+                Document deletedDoc = this.minHeap.remove();
+                this.hashTable.put(deletedDoc.getKey(), null);
+                this.documentInventory = this.documentInventory - 1;
+                this.memoryStorage = this.memoryStorage - this.memoryMap.get(deletedDoc);
+                this.memoryMap.remove(deletedDoc);
+            }
+        }
+    }
     @Override
     public void setMaxDocumentBytes(int limit) {
         this.maxDocumentBytes = limit;
+        clearUpDocuments();
     }
 }
