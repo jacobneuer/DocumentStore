@@ -812,7 +812,7 @@ public class DocumentStoreImplTest {
         Document d = documentStore.get(uri4);
         assertNull(d);
     }
-    @DisplayName("Test Max Document Count Works After Undo")
+    @DisplayName("Test Max Document Count Works After Put Undo")
     @Test
     public void Forty() throws IOException {
         String docText = "I love Torah and I love Mitzvot";
@@ -830,10 +830,38 @@ public class DocumentStoreImplTest {
         URI uri3 = create("DocumentURI3");
         DocumentImpl doc3 = new DocumentImpl(uri3, docText3);
         documentStore.put(targetStream3, uri3, DocumentStore.DocumentFormat.TXT);
-        documentStore.delete(uri2);
-        documentStore.undo();
         documentStore.setMaxDocumentCount(2);
+        documentStore.undo();
         Document test = documentStore.get(uri);
+        Document test2 = documentStore.get(uri2);
+        Document test3 = documentStore.get(uri3);
+        assertNull(test);
+        assertEquals(doc2, test2);
+        assertNull(test3);
+    }
+    @DisplayName("Test Max Document Count Works After Delete Undo")
+    @Test
+    public void fortyOne() throws IOException {
+        String docText = "I love Torah and I love Mitzvot";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "I also love cookies and cake";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        String docText3 = "love love love love";
+        InputStream targetStream3 = new ByteArrayInputStream(docText3.getBytes());
+        URI uri3 = create("DocumentURI3");
+        DocumentImpl doc3 = new DocumentImpl(uri3, docText3);
+        documentStore.put(targetStream3, uri3, DocumentStore.DocumentFormat.TXT);
+        documentStore.put(null, uri, DocumentStore.DocumentFormat.TXT);
+        documentStore.setMaxDocumentCount(2);
+        documentStore.undo();
+        Document test = documentStore.get(uri2);
         assertNull(test);
     }
+
 }
