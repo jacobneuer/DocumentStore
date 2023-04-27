@@ -93,24 +93,10 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         };
         return putBackFunction;
     }
-
     private void removeFromHeap(Document deletedDoc) {
-        //Search for document from the heap and remove it
-        List<Document> tempDocs = new ArrayList<>();
-        for(int i = 0; i < this.documentInventory; i++) {
-            Document d = this.minHeap.remove();
-            if(d.equals(deletedDoc)) {
-                for(Document doc: tempDocs) {
-                    this.minHeap.insert(doc);
-                }
-                return;
-            }
-            tempDocs.add(d);
-        }
-        //Was not found so put the temps back into the heap and return
-        for(Document doc: tempDocs) {
-            this.minHeap.insert(doc);
-        }
+        deletedDoc.setLastUseTime(0);
+        this.minHeap.reHeapify(deletedDoc);
+        this.minHeap.remove();
     }
     private int putText(InputStream input, URI uri) throws IOException {
         String text;
@@ -124,6 +110,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         DocumentImpl newStringDoc = new DocumentImpl(uri, text);
         //Update the memory map
         int documentStorage = newStringDoc.getDocumentTxt().getBytes().length;
+        isDocumentLargerThanMemoryMaximum(documentStorage);
         this.memoryMap.put(newStringDoc, documentStorage);
         this.memoryStorage = this.memoryStorage + documentStorage;
         //Update the trie
@@ -241,6 +228,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         DocumentImpl newBinaryDoc = new DocumentImpl(uri, bytes);
         //Update the memory map
         int documentStorage = bytes.length;
+        isDocumentLargerThanMemoryMaximum(documentStorage);
         this.memoryMap.put(newBinaryDoc, documentStorage);
         this.memoryStorage = this.memoryStorage + documentStorage;
         //Update the last time using the document and put the new document in heap
@@ -263,6 +251,13 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         }
         else {
             return replaceBinaryUndo(uri, newBinaryDoc, documentStorage, oldBinaryDoc);
+        }
+    }
+
+    private void isDocumentLargerThanMemoryMaximum(int documentStorage) {
+        if(this.maxDocumentBytes != null && documentStorage > this.maxDocumentBytes) {
+            this.documentInventory = this.documentInventory - 1;
+            throw new IllegalArgumentException("Can't add a document larger than the memory maximum");
         }
     }
 

@@ -170,6 +170,7 @@ public class HashTableImpl<Key,Value> implements edu.yu.cs.com1320.project.HashT
         LinkedEntries.Node current = list.head;
         Key currentKey = (Key) current.entry.key;
         if (currentKey.equals(k)) {
+            this.elements = this.elements - 1;
             Value old = (Value) current.entry.value;
             list.head = list.head.next;
             list.addNode(putEntry);
@@ -179,6 +180,7 @@ public class HashTableImpl<Key,Value> implements edu.yu.cs.com1320.project.HashT
             if (current.next != null) {
                 Key loopKey = (Key) current.next.entry.key;
                 if(loopKey.equals(k)) {
+                    this.elements = this.elements - 1;
                     Value old = (Value) current.next.entry.value;
                     current.next = current.next.next;
                     list.addNode(putEntry);

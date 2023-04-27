@@ -863,5 +863,27 @@ public class DocumentStoreImplTest {
         Document test = documentStore.get(uri2);
         assertNull(test);
     }
-
+    @DisplayName("Test Replacing Document")
+    @Test
+    public void fortyTwo() throws IOException {
+        String docText = "I love Torah and I love Mitzvot";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        String docText2 = "I also love cookies and cake";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        documentStore.put(targetStream2, uri, DocumentStore.DocumentFormat.TXT);
+        String docText3 = "love love love love";
+        InputStream targetStream3 = new ByteArrayInputStream(docText3.getBytes());
+        URI uri3 = create("DocumentURI3");
+        DocumentImpl doc3 = new DocumentImpl(uri3, docText3);
+        documentStore.put(targetStream3, uri3, DocumentStore.DocumentFormat.TXT);
+        documentStore.setMaxDocumentCount(2);
+        documentStore.undo(uri);
+        Document test = documentStore.get(uri);
+        assertEquals(doc, test);
+    }
 }
