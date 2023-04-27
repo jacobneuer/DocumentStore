@@ -351,10 +351,27 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
 
     @Override
     public void undo() throws IllegalStateException {
-        if (this.stack.peek() != null){
+        if (this.stack.peek() != null) {
             Undoable undoCommand = this.stack.pop();
             undoCommand.undo();
             return;
+            /*
+            if (undoCommand instanceof GenericCommand<?>) {
+                undoCommand.undo();
+            }
+            else {
+                CommandSet<URI> commandSet = (CommandSet<URI>) undoCommand;
+                Iterator<GenericCommand<URI>> genericCommandIterator = commandSet.iterator();
+                commandSet.undoAll();
+                long updateTime = System.nanoTime();
+                while(genericCommandIterator.hasNext()) {
+                    GenericCommand<URI> command = genericCommandIterator.next();
+                    if (this.hashTable.get(command.getTarget()) != null) {
+                        this.hashTable.get(command.getTarget()).setLastUseTime(updateTime);
+                    }
+                }
+            }
+             */
         }
         //No frames to undo
         throw new IllegalStateException("Can't undo with no frames in the stack");
@@ -401,7 +418,9 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         else {
             CommandSet<URI> commandSet = (CommandSet<URI>) this.stack.pop();
             commandSet.undo(uri);
-            this.stack.push(commandSet);
+            if (commandSet.size() > 0) {
+                this.stack.push(commandSet);
+            }
         }
         //Put the temp stacks back on the stack
         while (tempStack.peek() != null) {
@@ -510,7 +529,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
                 this.memoryStorage = this.memoryStorage - documentStorage;
             }
             //Create undo functions
-            Function<URI, Boolean> putBackFunction = deleteUndo(d);
+            Function<URI, Boolean> putBackFunction = createDeleteUndo(d);
             GenericCommand<URI> undoDelete = new GenericCommand<>(d.getKey(), putBackFunction);
             commandSet.addCommand(undoDelete);
             //Add the deleted documents to a set of URIs to return and then delete the doc from the store
@@ -522,7 +541,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
     }
 
     @NotNull
-    private Function<URI, Boolean> deleteUndo(Document d) {
+    private Function<URI, Boolean> createDeleteUndo(Document d) {
         Function<URI, Boolean> putBackFunction = (x) ->
         {
             DocumentImpl implDeletedDoc = (DocumentImpl) d;
@@ -569,7 +588,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
                 this.memoryMap.remove(d);
                 this.memoryStorage = this.memoryStorage - documentStorage;
             }
-            Function<URI, Boolean> putBackFunction = deleteUndo(d);
+            Function<URI, Boolean> putBackFunction = createDeleteUndo(d);
             GenericCommand<URI> undoDelete = new GenericCommand<>(d.getKey(), putBackFunction);
             this.stack.push(undoDelete);
             //Add the deleted document to a set of URIs to return and then delete the doc from the store

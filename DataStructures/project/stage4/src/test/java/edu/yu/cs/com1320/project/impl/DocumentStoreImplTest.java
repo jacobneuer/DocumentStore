@@ -476,7 +476,7 @@ public class DocumentStoreImplTest {
         List<Document> searchResults = documentStore.searchByPrefix("c");
         assert(searchResults.isEmpty());
     }
-    @DisplayName("Test Undo Method")
+    @DisplayName("Test Undo Method With CommandSet")
     @Test
     public void twentySeven() throws IOException {
         String docText = "I love Torah and I love Mitzvot";
