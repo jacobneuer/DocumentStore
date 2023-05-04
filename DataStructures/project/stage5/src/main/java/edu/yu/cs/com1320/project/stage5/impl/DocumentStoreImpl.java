@@ -1,17 +1,15 @@
-package edu.yu.cs.com1320.project.stage4.impl;
+package edu.yu.cs.com1320.project.stage5.impl;
 
 import com.sun.jdi.Value;
 import edu.yu.cs.com1320.project.CommandSet;
 import edu.yu.cs.com1320.project.GenericCommand;
 import edu.yu.cs.com1320.project.Undoable;
-import edu.yu.cs.com1320.project.impl.HashTableImpl;
-import edu.yu.cs.com1320.project.impl.MinHeapImpl;
-import edu.yu.cs.com1320.project.impl.StackImpl;
-import edu.yu.cs.com1320.project.impl.TrieImpl;
-import edu.yu.cs.com1320.project.stage4.Document;
-import edu.yu.cs.com1320.project.stage4.DocumentStore;
+import edu.yu.cs.com1320.project.impl.*;
+import edu.yu.cs.com1320.project.stage5.Document;
+import edu.yu.cs.com1320.project.stage5.DocumentStore;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -19,23 +17,27 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
 
-public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.DocumentStore {
+public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.DocumentStore {
 
     private Integer maxDocumentCount;
     private Integer maxDocumentBytes;
     private int documentInventory = 0;
     private int memoryStorage = 0;
-    private HashTableImpl<URI, DocumentImpl> hashTable;
+    private BTreeImpl<URI, Document> bTree;
     private StackImpl<Undoable> stack;
     private TrieImpl<Document> trie;
     private MinHeapImpl<Document> minHeap;
     private HashMap<Document, Integer> memoryMap;
     public DocumentStoreImpl() {
-        this.hashTable = new HashTableImpl<>();
+        this.bTree = new BTreeImpl<>();
         this.stack = new StackImpl<>();
         this.trie = new TrieImpl<>();
         this.minHeap = new MinHeapImpl<>();
         this.memoryMap = new HashMap<>();
+        String directoryPath = "/Users/yaacovneuer/CompSci/disk";
+        File directory = new File(directoryPath);
+        DocumentPersistenceManager documentPersistenceManager = new DocumentPersistenceManager(directory);
+        this.bTree.setPersistenceManager(documentPersistenceManager);
     }
 
     @Override
@@ -57,7 +59,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         }
     }
     private int putDelete(URI uri) {
-        DocumentImpl deletedDoc = this.hashTable.put(uri, null);
+        DocumentImpl deletedDoc = (DocumentImpl) this.bTree.put(uri, null);
         if (deletedDoc != null) {
             this.documentInventory = this.documentInventory - 1;
             //Update the memory map depending on its type of document
@@ -80,7 +82,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
     private Function<URI, Boolean> undoPutFunction(DocumentImpl deletedDoc) {
         Function<URI, Boolean> putBackFunction = (x) ->
         {
-            this.hashTable.put(x, deletedDoc);
+            this.bTree.put(x, deletedDoc);
             this.documentInventory = this.documentInventory + 1;
             //Update the memory
             addMemoryBack(deletedDoc);
@@ -119,7 +121,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         newStringDoc.setLastUseTime(System.nanoTime());
         this.minHeap.insert(newStringDoc);
         //Put the new document into the store
-        DocumentImpl oldDoc = this.hashTable.put(uri, newStringDoc);
+        DocumentImpl oldDoc = (DocumentImpl) this.bTree.put(uri, newStringDoc);
         //If there was an old document, delete references to it in memory, document space, trie, and heap
         if(oldDoc != null) {
             this.documentInventory = this.documentInventory - 1;
@@ -143,7 +145,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
     private int newPutUndo (URI uri, DocumentImpl newStringDoc){
         //Creates an Undo function to delete the new document that was put in the store
         Function<URI, Boolean> deleteFunction = (x) -> {
-            this.hashTable.put(x, null);
+            this.bTree.put(x, null);
             //Update memory
             deleteMemory(newStringDoc);
             trieDeletion(newStringDoc);
@@ -157,7 +159,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
     private int replacePutUndo (URI uri, DocumentImpl newStringDoc, DocumentImpl oldStringDoc) {
         Function<URI, Boolean> replaceFunction = (x) -> {
             //Put the old document back in the store
-            this.hashTable.put(x, oldStringDoc);
+            this.bTree.put(x, oldStringDoc);
             //Add it to the trie
             trieAddition(oldStringDoc);
             //Update memory to add the old document
@@ -235,7 +237,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         newBinaryDoc.setLastUseTime(System.nanoTime());
         this.minHeap.insert(newBinaryDoc);
         //Place the new binary document into the table
-        DocumentImpl oldBinaryDoc = this.hashTable.put(uri, newBinaryDoc);
+        DocumentImpl oldBinaryDoc = (DocumentImpl) this.bTree.put(uri, newBinaryDoc);
         //If an old binary document is being replaced, delete references to it in memory, document space, and heap
         if(oldBinaryDoc != null) {
             this.documentInventory = this.documentInventory - 1;
@@ -265,7 +267,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         //Add undo function to the stack to put back the old document associated with the URI
         //Update the old binary document's last use time and put it back in the heap
         Function<URI, Boolean> replaceFunction = (x) -> {
-            this.hashTable.put(x, oldBinaryDoc);
+            this.bTree.put(x, oldBinaryDoc);
             //To undo the new document being deleted, remove it from heap and remove it from memory
             removeFromHeap(newBinaryDoc);
             this.memoryMap.remove(newBinaryDoc);
@@ -287,7 +289,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
     private int newBinaryPutUndo(URI uri, DocumentImpl newBinaryDoc, int documentStorage) {
         //Add undo function to the stack to delete the new document being added to the store
         Function<URI, Boolean> deleteFunction = (x) -> {
-            this.hashTable.put(x, null);
+            this.bTree.put(x, null);
             this.documentInventory = this.documentInventory - 1;
             removeFromHeap(newBinaryDoc);
             //Update the memory
@@ -302,7 +304,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
 
     @Override
     public Document get(URI uri) {
-        Document getDocument = this.hashTable.get(uri);
+        Document getDocument = this.bTree.get(uri);
         if (getDocument != null){
             //Update last time using the document
             getDocument.setLastUseTime(System.nanoTime());
@@ -314,7 +316,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
     @Override
     public boolean delete(URI uri) {
         //Remove document from the store
-        DocumentImpl deletedDoc = this.hashTable.put(uri, null);
+        DocumentImpl deletedDoc = (DocumentImpl) this.bTree.put(uri, null);
         //If there's no old document being returned then we didn't do anything so there's nothing to undo
         if (deletedDoc == null) {
             return false;
@@ -335,7 +337,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         //Update the deleted document's last use time and add back into the heap
         Function<URI, Boolean> putBackFunction = (x) ->
         {
-            this.hashTable.put(x, deletedDoc);
+            this.bTree.put(x, deletedDoc);
             this.documentInventory = this.documentInventory + 1;
             trieAddition(deletedDoc);
             //Update memory
@@ -517,7 +519,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
             commandSet.addCommand(undoDelete);
             //Add the deleted documents to a set of URIs to return and then delete the doc from the store
             deletedURIs.add(d.getKey());
-            this.hashTable.put(d.getKey(), null);
+            this.bTree.put(d.getKey(), null);
         }
         this.stack.push(commandSet);
         return deletedURIs;
@@ -528,7 +530,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         Function<URI, Boolean> putBackFunction = (x) ->
         {
             DocumentImpl implDeletedDoc = (DocumentImpl) d;
-            this.hashTable.put(x, implDeletedDoc);
+            this.bTree.put(x, implDeletedDoc);
             this.documentInventory = this.documentInventory + 1;
             //Add back into trie
             trieAddition(implDeletedDoc);
@@ -576,7 +578,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
             this.stack.push(undoDelete);
             //Add the deleted document to a set of URIs to return and then delete the doc from the store
             deletedURIs.add(d.getKey());
-            this.hashTable.put(d.getKey(), null);
+            this.bTree.put(d.getKey(), null);
         }
         return deletedURIs;
     }
@@ -606,7 +608,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         if(this.maxDocumentCount != null) {
             while(this.documentInventory > this.maxDocumentCount) {
                 Document deletedDoc = this.minHeap.remove();
-                this.hashTable.put(deletedDoc.getKey(), null);
+                this.bTree.put(deletedDoc.getKey(), null);
                 this.documentInventory = this.documentInventory - 1;
                 this.memoryStorage = this.memoryStorage - this.memoryMap.get(deletedDoc);
                 this.memoryMap.remove(deletedDoc);
@@ -617,7 +619,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         if(this.maxDocumentBytes != null) {
             while(this.memoryStorage > this.maxDocumentBytes) {
                 Document deletedDoc = this.minHeap.remove();
-                this.hashTable.put(deletedDoc.getKey(), null);
+                this.bTree.put(deletedDoc.getKey(), null);
                 this.documentInventory = this.documentInventory - 1;
                 this.memoryStorage = this.memoryStorage - this.memoryMap.get(deletedDoc);
                 this.memoryMap.remove(deletedDoc);
