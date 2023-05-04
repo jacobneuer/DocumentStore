@@ -6,6 +6,7 @@ import edu.yu.cs.com1320.project.stage5.Document;
 import edu.yu.cs.com1320.project.stage5.PersistenceManager;
 
 import java.net.URISyntaxException;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -38,8 +39,13 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
             public JsonElement serialize(Document document, Type type, JsonSerializationContext jsonSerializationContext) {
                 JsonObject json = new JsonObject();
                 json.addProperty("uri", document.getKey().toString());
-                json.addProperty("documentText", document.getDocumentTxt());
-                json.add("wordMap", gson.toJsonTree(document.getWordMap()));
+                if (document.getDocumentTxt() != null) {
+                    json.addProperty("documentText", document.getDocumentTxt());
+                    json.add("wordMap", gson.toJsonTree(document.getWordMap()));
+                }
+                else {
+                    json.addProperty("byteArray", Base64.getEncoder().encodeToString(document.getDocumentBinaryData()));
+                }
                 return json;
             }
         };
@@ -58,9 +64,8 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
 
     @Override
     public Document deserialize(URI uri) throws IOException {
-        // Specify the path to the directory where the file is located
         Path directoryPath = Paths.get(this.filePathString);
-        // Specify the name of the JSON file
+        // Name of the JSON file
         String fileName = uri.toString() + ".json";
         // Create a Path object for the JSON file
         Path filePath = directoryPath.resolve(fileName);
@@ -83,18 +88,25 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
                 catch (URISyntaxException x) {
                     throw new IllegalArgumentException(x.getMessage(), x);
                 }
-                String documentText = jsonObject.get("documentText").getAsString();
-                JsonObject hashMapJsonObject = jsonObject.getAsJsonObject("wordMap");
-                Map<String, Integer> wordMap = new HashMap<>();
-                for (Map.Entry<String, JsonElement> entry : hashMapJsonObject.entrySet()) {
-                    String string = entry.getKey();
-                    JsonElement value = entry.getValue();
-                    JsonPrimitive primitive = value.getAsJsonPrimitive();
-                    Number n = primitive.getAsNumber();
-                    Integer integer = n.intValue();
-                    wordMap.put(string, integer);
+                try {
+                    String documentText = jsonObject.get("documentText").getAsString();
+                    JsonObject hashMapJsonObject = jsonObject.getAsJsonObject("wordMap");
+                    Map<String, Integer> wordMap = new HashMap<>();
+                    for (Map.Entry<String, JsonElement> entry : hashMapJsonObject.entrySet()) {
+                        String string = entry.getKey();
+                        JsonElement value = entry.getValue();
+                        JsonPrimitive primitive = value.getAsJsonPrimitive();
+                        Number n = primitive.getAsNumber();
+                        Integer integer = n.intValue();
+                        wordMap.put(string, integer);
+                    }
+                    return new DocumentImpl(uri, documentText, wordMap);
                 }
-                return new DocumentImpl(uri, documentText, wordMap);
+                catch (Exception e) {
+                    JsonElement byteElement = jsonObject.get("byteArray");
+                    byte[] byteArray = Base64.getDecoder().decode(byteElement.getAsString());
+                    return new DocumentImpl(uri, byteArray);
+                }
             }
         };
         Document d = deserializer.deserialize(json, null, null);

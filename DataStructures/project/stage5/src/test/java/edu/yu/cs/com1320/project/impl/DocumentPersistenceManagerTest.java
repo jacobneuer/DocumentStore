@@ -54,7 +54,7 @@ public class DocumentPersistenceManagerTest {
         DocumentImpl doc = new DocumentImpl(uri, docText);
         this.dpm.serialize(uri, doc);
     }
-    @DisplayName("Create a File The Delete It")
+    @DisplayName("Create a File Then Delete It")
     @Test
     public void testTwo() throws IOException {
         String docText = "This is a Document String Text";
@@ -63,7 +63,7 @@ public class DocumentPersistenceManagerTest {
         this.dpm.serialize(uri, doc);
         this.dpm.delete(uri);
     }
-    @DisplayName("Create a File The Delete It")
+    @DisplayName("Create a Text File Then Deserialize It")
     @Test
     public void testThree() throws IOException {
         String docText = "This is a Document String Text";
@@ -75,5 +75,34 @@ public class DocumentPersistenceManagerTest {
         assertEquals(doc.getKey(), d.getKey());
         assertEquals(doc.getDocumentTxt(), d.getDocumentTxt());
         assertEquals(doc.getWordMap(), d.getWordMap());
+    }
+    @DisplayName("Test if Byte File is Created in Proper Directory")
+    @Test
+    public void testFour() throws IOException {
+        byte[] initialArray = { 0, 1, 2 };
+        URI uri = create("BinaryURI");
+        DocumentImpl doc = new DocumentImpl(uri, initialArray);
+        this.dpm.serialize(uri, doc);
+    }
+    @DisplayName("Create a Byte File Then Delete It")
+    @Test
+    public void testFive() throws IOException {
+        byte[] initialArray = { 0, 1, 2 };
+        URI uri = create("BinaryURI");
+        DocumentImpl doc = new DocumentImpl(uri, initialArray);
+        this.dpm.serialize(uri, doc);
+        this.dpm.delete(uri);
+    }
+    @DisplayName("Create a Byte File Then Deserialize It")
+    @Test
+    public void testSix() throws IOException {
+        byte[] initialArray = {0, 1, 2};
+        URI uri = create("BinaryURI");
+        DocumentImpl doc = new DocumentImpl(uri, initialArray);
+        this.dpm.serialize(uri, doc);
+        Document d = this.dpm.deserialize(uri);
+        assertEquals(doc, d);
+        assertEquals(doc.getKey(), d.getKey());
+        assertEquals(doc.getDocumentBinaryData(), d.getDocumentBinaryData());
     }
 }
