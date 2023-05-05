@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -103,6 +104,44 @@ public class DocumentPersistenceManagerTest {
         Document d = this.dpm.deserialize(uri);
         assertEquals(doc, d);
         assertEquals(doc.getKey(), d.getKey());
-        assertEquals(doc.getDocumentBinaryData(), d.getDocumentBinaryData());
+        assert(Arrays.equals(doc.getDocumentBinaryData(), d.getDocumentBinaryData()));
+    }
+    @DisplayName("Store Json File With https://")
+    @Test
+    public void testSeven() throws IOException {
+        String docText = "This is a Document String Text";
+        URI uri = create("https://DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        this.dpm.serialize(uri, doc);
+    }
+    @DisplayName("Create an https:// File Then Delete It")
+    @Test
+    public void testEight() throws IOException {
+        String docText = "This is a Document String Text";
+        URI uri = create("https://DocumentURI.com");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        this.dpm.serialize(uri, doc);
+        this.dpm.delete(uri);
+    }
+    @DisplayName("Create an https:// Text File Then Deserialize It")
+    @Test
+    public void testNine() throws IOException {
+        String docText = "This is a Document String Text";
+        URI uri = create("https://DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        this.dpm.serialize(uri, doc);
+        Document d = this.dpm.deserialize(uri);
+        assertEquals(doc, d);
+        assertEquals(doc.getKey(), d.getKey());
+        assertEquals(doc.getDocumentTxt(), d.getDocumentTxt());
+        assertEquals(doc.getWordMap(), d.getWordMap());
+    }
+    @DisplayName("Test if File will Create Folders to be Put in Proper Directory")
+    @Test
+    public void testTen() throws IOException {
+        String docText = "This is a Document String Text";
+        URI uri = create("https://www.yu.edu/documents/doc1");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        this.dpm.serialize(uri, doc);
     }
 }

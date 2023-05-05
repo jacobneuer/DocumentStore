@@ -26,9 +26,9 @@ import java.io.IOException;
  */
 public class DocumentPersistenceManager implements PersistenceManager<URI, Document> {
 
-    private final String filePathString;
+    private final String baseDir;
     public DocumentPersistenceManager(File baseDir){
-        this.filePathString = baseDir.toString();
+        this.baseDir = baseDir.toString();
     }
 
     @Override
@@ -51,8 +51,33 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
         };
         JsonElement jsonElement = serializer.serialize(val, null, null);
         String fileName = uri.toString() + ".json";
+        //Remove https:// to create the file name
+        if (uri.toString().startsWith("https://")) {
+            fileName = fileName.substring(8);
+        }
+        // Create the path of directories to create
+        // If there are a series of directories to create, get the
+        // file name by only taking from the last / and on
+        int lastIndex = fileName.lastIndexOf('/');
+        String directoryPathString = "";
+        if (lastIndex != -1) {
+            directoryPathString = fileName.substring(0, lastIndex);
+            fileName = fileName.substring(lastIndex + 1);
+        }
         try {
-            FileWriter fileWriter = new FileWriter(this.filePathString + "/" + fileName);
+            //Create new directories if need be
+            String fullPath = this.baseDir + "/" + directoryPathString;
+            Path directoryPath = Paths.get(fullPath);
+            try {
+                Files.createDirectories(directoryPath);
+                System.out.println("Directory created successfully");
+            }
+            catch (Exception e) {
+                System.out.println("Error creating directory: " + e.getMessage());
+                return;
+            }
+            //Write the new file in the directory
+            FileWriter fileWriter = new FileWriter(fullPath + "/" + fileName);
             gson.toJson(jsonElement, fileWriter);
             fileWriter.close();
             System.out.println(fileName + " written successfully");
@@ -64,9 +89,11 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
 
     @Override
     public Document deserialize(URI uri) throws IOException {
-        Path directoryPath = Paths.get(this.filePathString);
-        // Name of the JSON file
+        Path directoryPath = Paths.get(this.baseDir);
         String fileName = uri.toString() + ".json";
+        if (uri.toString().startsWith("https://")) {
+            fileName = fileName.substring(8);
+        }
         // Create a Path object for the JSON file
         Path filePath = directoryPath.resolve(fileName);
         // create a BufferedReader to read the contents of the file
@@ -117,7 +144,10 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
     @Override
     public boolean delete(URI uri) throws IOException {
         String deletedFile = uri.toString() + ".json";
-        File file = new File(this.filePathString, deletedFile);
+        if (uri.toString().startsWith("https://")) {
+            deletedFile = deletedFile.substring(8);
+        }
+        File file = new File(this.baseDir, deletedFile);
         if (file.delete()) {
             System.out.println(deletedFile + " deleted successfully");
             return true;
