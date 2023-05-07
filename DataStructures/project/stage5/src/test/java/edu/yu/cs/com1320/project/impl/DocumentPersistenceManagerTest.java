@@ -144,4 +144,26 @@ public class DocumentPersistenceManagerTest {
         DocumentImpl doc = new DocumentImpl(uri, docText);
         this.dpm.serialize(uri, doc);
     }
+    @DisplayName("Create an https:// File Then Delete It")
+    @Test
+    public void testEleven() throws IOException {
+        String docText = "This is a Document String Text";
+        URI uri = create("https://www.yu.edu/documents/doc1");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        this.dpm.serialize(uri, doc);
+        this.dpm.delete(uri);
+    }
+    @DisplayName("Create an https:// Text File Then Deserialize It")
+    @Test
+    public void testTwelve() throws IOException {
+        String docText = "This is a Document String Text";
+        URI uri = create("https://www.yu.edu/documents/doc1");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        this.dpm.serialize(uri, doc);
+        Document d = this.dpm.deserialize(uri);
+        assertEquals(doc, d);
+        assertEquals(doc.getKey(), d.getKey());
+        assertEquals(doc.getDocumentTxt(), d.getDocumentTxt());
+        assertEquals(doc.getWordMap(), d.getWordMap());
+    }
 }

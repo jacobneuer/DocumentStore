@@ -70,7 +70,9 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
             Path directoryPath = Paths.get(fullPath);
             try {
                 Files.createDirectories(directoryPath);
-                System.out.println("Directory created successfully");
+                if (lastIndex != -1) {
+                    System.out.println("Directory created successfully");
+                }
             }
             catch (Exception e) {
                 System.out.println("Error creating directory: " + e.getMessage());
@@ -89,12 +91,20 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
 
     @Override
     public Document deserialize(URI uri) throws IOException {
-        Path directoryPath = Paths.get(this.baseDir);
         String fileName = uri.toString() + ".json";
         if (uri.toString().startsWith("https://")) {
             fileName = fileName.substring(8);
         }
-        // Create a Path object for the JSON file
+        int lastIndex = fileName.lastIndexOf('/');
+        String directoryPathString = "";
+        if (lastIndex != -1) {
+            directoryPathString = fileName.substring(0, lastIndex);
+            fileName = fileName.substring(lastIndex + 1);
+        }
+        String fullPath = this.baseDir + "/" + directoryPathString;
+        //Create a path for the directory of the file
+        Path directoryPath = Paths.get(fullPath);
+        // Create a Path object for the actual JSON file
         Path filePath = directoryPath.resolve(fileName);
         // create a BufferedReader to read the contents of the file
         BufferedReader reader = new BufferedReader(new FileReader(filePath.toFile()));
@@ -147,14 +157,34 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
         if (uri.toString().startsWith("https://")) {
             deletedFile = deletedFile.substring(8);
         }
-        File file = new File(this.baseDir, deletedFile);
+        // Create the path of directories to create
+        // If there are a series of directories to create, get the
+        // file name by only taking from the last / and on
+        int lastIndex = deletedFile.lastIndexOf('/');
+        String directoryPathString = this.baseDir;
+        if (lastIndex != -1) {
+            directoryPathString = this.baseDir + "/" + deletedFile.substring(0, lastIndex);
+            deletedFile = deletedFile.substring(lastIndex + 1);
+        }
+        File file = new File(directoryPathString, deletedFile);
         if (file.delete()) {
             System.out.println(deletedFile + " deleted successfully");
+            File directory = new File(directoryPathString);
+            deleteDirectory(directory);
             return true;
         }
         else {
             System.out.println("Failed to delete " + deletedFile);
             return false;
+        }
+    }
+    private void deleteDirectory(File directory) {
+        if (directory.exists()) {
+            File[] files = directory.listFiles();
+            if (files != null && files.length == 0 && !directory.toString().equals("disk")) {
+                directory.delete();
+                deleteDirectory(directory.getParentFile());
+            }
         }
     }
 }
