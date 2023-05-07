@@ -10,7 +10,6 @@ import edu.yu.cs.com1320.project.impl.StackImpl;
 import edu.yu.cs.com1320.project.impl.TrieImpl;
 import edu.yu.cs.com1320.project.stage4.Document;
 import edu.yu.cs.com1320.project.stage4.DocumentStore;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -523,7 +522,6 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage4.Docum
         return deletedURIs;
     }
 
-    @NotNull
     private Function<URI, Boolean> createDeleteUndo(Document d) {
         Function<URI, Boolean> putBackFunction = (x) ->
         {

@@ -183,6 +183,7 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
             File[] files = directory.listFiles();
             if (files != null && files.length == 0 && !directory.toString().equals("disk")) {
                 directory.delete();
+                System.out.println("Deleted" + directory + " directory successfully");
                 deleteDirectory(directory.getParentFile());
             }
         }
