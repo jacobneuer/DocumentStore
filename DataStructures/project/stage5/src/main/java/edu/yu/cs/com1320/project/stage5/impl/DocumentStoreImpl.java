@@ -26,8 +26,9 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
     private BTreeImpl<URI, Document> bTree;
     private StackImpl<Undoable> stack;
     private TrieImpl<Document> trie;
-    private MinHeapImpl<Document> minHeap;
-    private HashMap<Document, Integer> memoryMap;
+    private MinHeapImpl<MinHeapNode> minHeap;
+    private HashMap<URI, Integer> memoryMap;
+    private List<URI> diskURIs;
     public DocumentStoreImpl() {
         this.bTree = new BTreeImpl<>();
         this.stack = new StackImpl<>();
@@ -38,6 +39,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         File directory = new File(directoryPath);
         DocumentPersistenceManager documentPersistenceManager = new DocumentPersistenceManager(directory);
         this.bTree.setPersistenceManager(documentPersistenceManager);
+        this.diskURIs = new ArrayList<>();
     }
 
     @Override
@@ -63,7 +65,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         if (deletedDoc != null) {
             this.documentInventory = this.documentInventory - 1;
             //Update the memory map depending on its type of document
-            deleteMemory(deletedDoc);
+            deleteMemory(deletedDoc, false);
             //Add undo function to allow the document being deleted to be put back into the store in the future
             //To undo, put the document back in the store and add the words back into the trie
             Function<URI, Boolean> putBackFunction = undoPutFunction(deletedDoc);
@@ -89,7 +91,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             trieAddition(deletedDoc);
             //Update last time using the document
             deletedDoc.setLastUseTime(System.nanoTime());
-            this.minHeap.insert(deletedDoc);
+            this.minHeap.insert(deletedDoc.getKey());
             clearUpDocuments();
             return true;
         };
@@ -97,7 +99,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
     }
     private void removeFromHeap(Document deletedDoc) {
         deletedDoc.setLastUseTime(0);
-        this.minHeap.reHeapify(deletedDoc);
+        this.minHeap.reHeapify(deletedDoc.getKey());
         this.minHeap.remove();
     }
     private int putText(InputStream input, URI uri) throws IOException {
@@ -113,19 +115,19 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         //Update the memory map
         int documentStorage = newStringDoc.getDocumentTxt().getBytes().length;
         isDocumentLargerThanMemoryMaximum(documentStorage);
-        this.memoryMap.put(newStringDoc, documentStorage);
+        this.memoryMap.put(newStringDoc.getKey(), documentStorage);
         this.memoryStorage = this.memoryStorage + documentStorage;
         //Update the trie
         trieAddition(newStringDoc);
         //Update the last time using the document then put it into the heap
         newStringDoc.setLastUseTime(System.nanoTime());
-        this.minHeap.insert(newStringDoc);
+        this.minHeap.insert(newStringDoc.getKey());
         //Put the new document into the store
         DocumentImpl oldDoc = (DocumentImpl) this.bTree.put(uri, newStringDoc);
         //If there was an old document, delete references to it in memory, document space, trie, and heap
         if(oldDoc != null) {
             this.documentInventory = this.documentInventory - 1;
-            deleteMemory(oldDoc);
+            deleteMemory(oldDoc, true);
             //Delete all mentions of this document from the trie
             trieDeletion(oldDoc);
             //Delete from the heap
@@ -147,7 +149,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         Function<URI, Boolean> deleteFunction = (x) -> {
             this.bTree.put(x, null);
             //Update memory
-            deleteMemory(newStringDoc);
+            deleteMemory(newStringDoc, false);
             trieDeletion(newStringDoc);
             removeFromHeap(newStringDoc);
             return true;
@@ -166,11 +168,11 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             addMemoryBack(oldStringDoc);
             //Add the old document back to the heap
             oldStringDoc.setLastUseTime(System.nanoTime());
-            this.minHeap.insert(oldStringDoc);
+            this.minHeap.insert(oldStringDoc.getKey());
             //Delete new document from trie
             trieDeletion(newStringDoc);
             //Delete new document from memory and remove from heap
-            deleteMemory(newStringDoc);
+            deleteMemory(newStringDoc, true);
             removeFromHeap(newStringDoc);
             //Update space requirements
             clearUpDocuments();
@@ -181,15 +183,19 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         return oldStringDoc.hashCode();
     }
 
-    private void deleteMemory(DocumentImpl newStringDoc) {
+    private void deleteMemory(DocumentImpl newStringDoc, Boolean sameURI) {
         if (newStringDoc.getDocumentTxt() == null) {
             int oldDocumentStorage = newStringDoc.getDocumentBinaryData().length;
-            this.memoryMap.remove(newStringDoc);
+            if (!sameURI) {
+                this.memoryMap.remove(newStringDoc.getKey());
+            }
             this.memoryStorage = this.memoryStorage - oldDocumentStorage;
         }
         else {
             int oldDocumentStorage = newStringDoc.getDocumentTxt().getBytes().length;
-            this.memoryMap.remove(newStringDoc);
+            if (!sameURI) {
+                this.memoryMap.remove(newStringDoc.getKey());
+            }
             this.memoryStorage = this.memoryStorage - oldDocumentStorage;
         }
     }
@@ -197,12 +203,12 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
     private void addMemoryBack(DocumentImpl oldStringDoc) {
         if (oldStringDoc.getDocumentTxt() == null) {
             int oldDocumentStorage = oldStringDoc.getDocumentBinaryData().length;
-            this.memoryMap.put(oldStringDoc, oldDocumentStorage);
+            this.memoryMap.put(oldStringDoc.getKey(), oldDocumentStorage);
             this.memoryStorage = this.memoryStorage + oldDocumentStorage;
         }
         else {
             int oldDocumentStorage = oldStringDoc.getDocumentTxt().getBytes().length;
-            this.memoryMap.put(oldStringDoc, oldDocumentStorage);
+            this.memoryMap.put(oldStringDoc.getKey(), oldDocumentStorage);
             this.memoryStorage = this.memoryStorage + oldDocumentStorage;
         }
     }
@@ -231,18 +237,18 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         //Update the memory map
         int documentStorage = bytes.length;
         isDocumentLargerThanMemoryMaximum(documentStorage);
-        this.memoryMap.put(newBinaryDoc, documentStorage);
+        this.memoryMap.put(newBinaryDoc.getKey(), documentStorage);
         this.memoryStorage = this.memoryStorage + documentStorage;
         //Update the last time using the document and put the new document in heap
         newBinaryDoc.setLastUseTime(System.nanoTime());
-        this.minHeap.insert(newBinaryDoc);
+        this.minHeap.insert(newBinaryDoc.getKey());
         //Place the new binary document into the table
         DocumentImpl oldBinaryDoc = (DocumentImpl) this.bTree.put(uri, newBinaryDoc);
         //If an old binary document is being replaced, delete references to it in memory, document space, and heap
         if(oldBinaryDoc != null) {
             this.documentInventory = this.documentInventory - 1;
             //Update storage of old binary document
-            deleteMemory(oldBinaryDoc);
+            deleteMemory(oldBinaryDoc, true);
             //Delete from the heap
             removeFromHeap(oldBinaryDoc);
         }
@@ -273,11 +279,11 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             this.memoryMap.remove(newBinaryDoc);
             this.memoryStorage = this.memoryStorage - documentStorage;
             //Update the memory of the old document being put back into the store
-            this.memoryMap.put(oldBinaryDoc, oldBinaryDoc.getDocumentBinaryData().length);
+            this.memoryMap.put(oldBinaryDoc.getKey(), oldBinaryDoc.getDocumentBinaryData().length);
             this.memoryStorage = this.memoryStorage + oldBinaryDoc.getDocumentBinaryData().length;
             //Update the old binary document's last use time and put it back in the heap
             oldBinaryDoc.setLastUseTime(System.nanoTime());
-            this.minHeap.insert(oldBinaryDoc);
+            this.minHeap.insert(oldBinaryDoc.getKey());
             clearUpDocuments();
             return true;
         };
@@ -304,11 +310,23 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
 
     @Override
     public Document get(URI uri) {
+        DocumentImpl getDocumentImpl;
+        if (this.diskURIs.contains(uri)) {
+            this.diskURIs.remove(uri);
+            getDocumentImpl = (DocumentImpl) this.bTree.get(uri);
+            this.documentInventory = this.documentInventory + 1;
+            trieAddition(getDocumentImpl);
+            //Update memory
+            addMemoryBack(getDocumentImpl);
+            getDocumentImpl.setLastUseTime(System.nanoTime());
+            this.minHeap.insert(getDocumentImpl.getKey());
+            clearUpDocuments();
+        }
         Document getDocument = this.bTree.get(uri);
         if (getDocument != null){
             //Update last time using the document
             getDocument.setLastUseTime(System.nanoTime());
-            this.minHeap.reHeapify(getDocument);
+            this.minHeap.reHeapify(getDocument.getKey());
         }
         return getDocument;
     }
@@ -323,7 +341,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         }
         this.documentInventory = this.documentInventory - 1;
         //Update the memory map depending on its type of document
-        deleteMemory(deletedDoc);
+        deleteMemory(deletedDoc, false);
         //Delete all mentions of the document from the trie
         trieDeletion(deletedDoc);
         //Delete from the heap
@@ -343,7 +361,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             //Update memory
             addMemoryBack(deletedDoc);
             deletedDoc.setLastUseTime(System.nanoTime());
-            this.minHeap.insert(deletedDoc);
+            this.minHeap.insert(deletedDoc.getKey());
             clearUpDocuments();
             return true;
         };
@@ -431,7 +449,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         long updateTime = System.nanoTime();
         for(Document d: documents) {
             d.setLastUseTime(updateTime);
-            this.minHeap.reHeapify(d);
+            this.minHeap.reHeapify(d.getKey());
         }
         return documents;
     }
@@ -444,7 +462,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         long updateTime = System.nanoTime();
         for(Document d: documents) {
             d.setLastUseTime(updateTime);
-            this.minHeap.reHeapify(d);
+            this.minHeap.reHeapify(d.getKey());
         }
         return documents;
     }
@@ -525,7 +543,6 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         return deletedURIs;
     }
 
-    @NotNull
     private Function<URI, Boolean> createDeleteUndo(Document d) {
         Function<URI, Boolean> putBackFunction = (x) ->
         {
@@ -537,17 +554,17 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             //Update memory
             if (d.getDocumentTxt() == null) {
                 int documentStorage = d.getDocumentBinaryData().length;
-                this.memoryMap.put(d, documentStorage);
+                this.memoryMap.put(d.getKey(), documentStorage);
                 this.memoryStorage = this.memoryStorage + documentStorage;
             }
             else {
                 int documentStorage = d.getDocumentTxt().getBytes().length;
-                this.memoryMap.put(d, documentStorage);
+                this.memoryMap.put(d.getKey(), documentStorage);
                 this.memoryStorage = this.memoryStorage + documentStorage;
             }
             //Add back into heap
             d.setLastUseTime(System.nanoTime());
-            this.minHeap.insert(d);
+            this.minHeap.insert(d.getKey());
             //Update space/memory
             clearUpDocuments();
             return true;
@@ -607,23 +624,33 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         //If number of documents are full then remove until space is cleared
         if(this.maxDocumentCount != null) {
             while(this.documentInventory > this.maxDocumentCount) {
-                Document deletedDoc = this.minHeap.remove();
-                this.bTree.put(deletedDoc.getKey(), null);
+                URI deletedDocURI = this.minHeap.remove();
+                try {
+                    this.bTree.moveToDisk(deletedDocURI);
+                    this.diskURIs.add(deletedDocURI);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
                 this.documentInventory = this.documentInventory - 1;
-                this.memoryStorage = this.memoryStorage - this.memoryMap.get(deletedDoc);
-                this.memoryMap.remove(deletedDoc);
-                deleteUndo(deletedDoc.getKey());
+                this.memoryStorage = this.memoryStorage - this.memoryMap.get(deletedDocURI);
+                this.memoryMap.remove(deletedDocURI);
+                deleteUndo(deletedDocURI);
             }
         }
         //If storage is full then delete documents until there's enough memory
         if(this.maxDocumentBytes != null) {
             while(this.memoryStorage > this.maxDocumentBytes) {
-                Document deletedDoc = this.minHeap.remove();
-                this.bTree.put(deletedDoc.getKey(), null);
+                URI deletedDocURI = this.minHeap.remove();
+                try {
+                    this.bTree.moveToDisk(deletedDocURI);
+                    this.diskURIs.add(deletedDocURI);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
                 this.documentInventory = this.documentInventory - 1;
-                this.memoryStorage = this.memoryStorage - this.memoryMap.get(deletedDoc);
-                this.memoryMap.remove(deletedDoc);
-                deleteUndo(deletedDoc.getKey());
+                this.memoryStorage = this.memoryStorage - this.memoryMap.get(deletedDocURI);
+                this.memoryMap.remove(deletedDocURI);
+                deleteUndo(deletedDocURI);
             }
         }
     }
@@ -664,5 +691,35 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         }
         this.maxDocumentBytes = limit;
         clearUpDocuments();
+    }
+    private class MinHeapNode implements Comparable<MinHeapNode> {
+        URI uri;
+        BTreeImpl<URI, Document> btree;
+        long lastUseTime; // the last use time of the URI being stored
+        MinHeapNode(URI uri, BTreeImpl<URI, Document> bTree) {
+            this.uri = uri;
+            this.btree = bTree;
+            lastUseTime = btree.get(uri).getLastUseTime();
+        }
+        private long getLastUseTime() {
+            return this.btree.get(uri).getLastUseTime();
+        }
+        private void updateLastUseTime() {
+            this.lastUseTime = this.btree.get(uri).getLastUseTime();
+        }
+        @Override
+        public int compareTo(DocumentStoreImpl.MinHeapNode minHeapNode) {
+            if (minHeapNode == null) {
+                throw new NullPointerException("Can't compare a MinHeapNode to a null value");
+            }
+            updateLastUseTime();
+            if (this.lastUseTime > minHeapNode.getLastUseTime()) {
+                return 1;
+            }
+            if (this.lastUseTime < minHeapNode.getLastUseTime()) {
+                return -1;
+            }
+            return 0;
+        }
     }
 }

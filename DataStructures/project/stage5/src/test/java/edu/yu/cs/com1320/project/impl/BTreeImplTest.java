@@ -1,7 +1,10 @@
 package edu.yu.cs.com1320.project.impl;
 
 import edu.yu.cs.com1320.project.BTree;
+import edu.yu.cs.com1320.project.stage5.Document;
+import edu.yu.cs.com1320.project.stage5.PersistenceManager;
 import edu.yu.cs.com1320.project.stage5.impl.DocumentImpl;
+import edu.yu.cs.com1320.project.stage5.impl.DocumentPersistenceManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -131,25 +134,12 @@ public class BTreeImplTest {
     @Test
     public void testNine() throws Exception {
         String docText = "I love Torah and I love Mitzvot";
-        URI uri = create("DocumentURI");
+        URI uri = create("http://www.yu.edu/Wymore/Is/The/Best/Professor/Ever/Document1");
         DocumentImpl doc = new DocumentImpl(uri, docText);
-        BTreeImpl<String, DocumentImpl> documentBTree = new BTreeImpl<>();
-        documentBTree.put("Document1", doc);
-        System.out.println(System.getProperty("user.dir"));
-        //documentBTree.moveToDisk("Document1");
-        String directoryPath = "/Users/yaacovneuer/CompSci/disk";
-        File directory = new File(directoryPath);
-
-        if (!directory.exists()) {
-            System.out.println("Directory does not exist.");
-            return;
-        }
-
-        if (!directory.isDirectory()) {
-            System.out.println(directoryPath + " is not a directory.");
-            return;
-        }
-
-        System.out.println("Directory path: " + directory.getAbsolutePath());
+        BTreeImpl<URI, Document> documentBTree = new BTreeImpl<>();
+        documentBTree.put(uri, doc);
+        DocumentPersistenceManager dpm = new DocumentPersistenceManager();
+        documentBTree.setPersistenceManager(dpm);
+        documentBTree.moveToDisk(uri);
     }
 }

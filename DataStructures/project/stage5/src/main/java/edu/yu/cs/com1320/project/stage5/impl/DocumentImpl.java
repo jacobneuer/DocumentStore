@@ -1,7 +1,6 @@
 package edu.yu.cs.com1320.project.stage5.impl;
 
 import edu.yu.cs.com1320.project.stage5.Document;
-import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
 import java.util.*;
@@ -85,7 +84,7 @@ public class DocumentImpl implements Document {
         int result = this.uri.hashCode();
         result = 31 * result + (this.documentText != null ? this.documentText.hashCode() : 0);
         result = 31 * result + Arrays.hashCode(this.byteArray);
-        return result;
+        return Math.abs(result);
     }
     @Override
     public boolean equals(Object obj) {

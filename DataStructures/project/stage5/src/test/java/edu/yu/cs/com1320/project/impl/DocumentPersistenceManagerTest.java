@@ -106,28 +106,28 @@ public class DocumentPersistenceManagerTest {
         assertEquals(doc.getKey(), d.getKey());
         assert(Arrays.equals(doc.getDocumentBinaryData(), d.getDocumentBinaryData()));
     }
-    @DisplayName("Store Json File With https://")
+    @DisplayName("Store Json File With http://")
     @Test
     public void testSeven() throws IOException {
         String docText = "This is a Document String Text";
-        URI uri = create("https://DocumentURI");
+        URI uri = create("http://DocumentURI");
         DocumentImpl doc = new DocumentImpl(uri, docText);
         this.dpm.serialize(uri, doc);
     }
-    @DisplayName("Create an https:// File Then Delete It")
+    @DisplayName("Create an http:// File Then Delete It")
     @Test
     public void testEight() throws IOException {
         String docText = "This is a Document String Text";
-        URI uri = create("https://DocumentURI.com");
+        URI uri = create("http://DocumentURI.com");
         DocumentImpl doc = new DocumentImpl(uri, docText);
         this.dpm.serialize(uri, doc);
         this.dpm.delete(uri);
     }
-    @DisplayName("Create an https:// Text File Then Deserialize It")
+    @DisplayName("Create an http:// Text File Then Deserialize It")
     @Test
     public void testNine() throws IOException {
         String docText = "This is a Document String Text";
-        URI uri = create("https://DocumentURI");
+        URI uri = create("http://DocumentURI");
         DocumentImpl doc = new DocumentImpl(uri, docText);
         this.dpm.serialize(uri, doc);
         Document d = this.dpm.deserialize(uri);
@@ -140,24 +140,24 @@ public class DocumentPersistenceManagerTest {
     @Test
     public void testTen() throws IOException {
         String docText = "This is a Document String Text";
-        URI uri = create("https://www.yu.edu/documents/doc1");
+        URI uri = create("http://www.yu.edu/documents/doc1");
         DocumentImpl doc = new DocumentImpl(uri, docText);
         this.dpm.serialize(uri, doc);
     }
-    @DisplayName("Create an https:// File Then Delete It")
+    @DisplayName("Create an http:// File Then Delete It")
     @Test
     public void testEleven() throws IOException {
         String docText = "This is a Document String Text";
-        URI uri = create("https://www.yu.edu/documents/doc1");
+        URI uri = create("http://www.yu.edu/documents/doc1");
         DocumentImpl doc = new DocumentImpl(uri, docText);
         this.dpm.serialize(uri, doc);
         this.dpm.delete(uri);
     }
-    @DisplayName("Create an https:// Text File Then Deserialize It")
+    @DisplayName("Create an http:// Text File Then Deserialize It")
     @Test
     public void testTwelve() throws IOException {
         String docText = "This is a Document String Text";
-        URI uri = create("https://www.yu.edu/documents/doc1");
+        URI uri = create("http://www.yu.edu/documents/doc1");
         DocumentImpl doc = new DocumentImpl(uri, docText);
         this.dpm.serialize(uri, doc);
         Document d = this.dpm.deserialize(uri);
@@ -165,5 +165,27 @@ public class DocumentPersistenceManagerTest {
         assertEquals(doc.getKey(), d.getKey());
         assertEquals(doc.getDocumentTxt(), d.getDocumentTxt());
         assertEquals(doc.getWordMap(), d.getWordMap());
+    }
+    @DisplayName("Create multiple http:// Text Files Then Deserialize Them")
+    @Test
+    public void testThirteen() throws IOException {
+        String docText = "This is a Document String Text";
+        URI uri = create("http://www.yu.edu/documents/doc1");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        this.dpm.serialize(uri, doc);
+        String docText2 = "Professor Wymore is the Best Professor in the World";
+        URI uri2 = create("http://www.yu.edu/Wymore/Is/The/Best/Professor/Ever/doc2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        this.dpm.serialize(uri2, doc2);
+        Document d = this.dpm.deserialize(uri);
+        Document d2 = this.dpm.deserialize(uri2);
+        assertEquals(doc, d);
+        assertEquals(doc.getKey(), d.getKey());
+        assertEquals(doc.getDocumentTxt(), d.getDocumentTxt());
+        assertEquals(doc.getWordMap(), d.getWordMap());
+        assertEquals(doc2, d2);
+        assertEquals(doc2.getKey(), d2.getKey());
+        assertEquals(doc2.getDocumentTxt(), d2.getDocumentTxt());
+        assertEquals(doc2.getWordMap(), d2.getWordMap());
     }
 }

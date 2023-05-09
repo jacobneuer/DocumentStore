@@ -27,6 +27,9 @@ import java.io.IOException;
 public class DocumentPersistenceManager implements PersistenceManager<URI, Document> {
 
     private final String baseDir;
+    public DocumentPersistenceManager(){
+        this.baseDir = System.getProperty("user.dir");
+    }
     public DocumentPersistenceManager(File baseDir){
         this.baseDir = baseDir.toString();
     }
@@ -51,9 +54,9 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
         };
         JsonElement jsonElement = serializer.serialize(val, null, null);
         String fileName = uri.toString() + ".json";
-        //Remove https:// to create the file name
-        if (uri.toString().startsWith("https://")) {
-            fileName = fileName.substring(8);
+        //Remove http:// to create the file name
+        if (uri.toString().startsWith("http://")) {
+            fileName = fileName.substring(7);
         }
         // Create the path of directories to create
         // If there are a series of directories to create, get the
@@ -71,7 +74,7 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
             try {
                 Files.createDirectories(directoryPath);
                 if (lastIndex != -1) {
-                    System.out.println("Directory created successfully");
+                    System.out.println(fileName + " directory created successfully");
                 }
             }
             catch (Exception e) {
@@ -82,18 +85,18 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
             FileWriter fileWriter = new FileWriter(fullPath + "/" + fileName);
             gson.toJson(jsonElement, fileWriter);
             fileWriter.close();
-            System.out.println(fileName + " written successfully");
+            System.out.println(fileName + " written successfully to disk");
         }
         catch (IOException e) {
-            System.out.println("Error writing " + fileName + ": " + e.getMessage());
+            throw new IOException("Error writing " + fileName + "to disk: " + e.getMessage());
         }
     }
 
     @Override
     public Document deserialize(URI uri) throws IOException {
         String fileName = uri.toString() + ".json";
-        if (uri.toString().startsWith("https://")) {
-            fileName = fileName.substring(8);
+        if (uri.toString().startsWith("http://")) {
+            fileName = fileName.substring(7);
         }
         int lastIndex = fileName.lastIndexOf('/');
         String directoryPathString = "";
@@ -154,8 +157,8 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
     @Override
     public boolean delete(URI uri) throws IOException {
         String deletedFile = uri.toString() + ".json";
-        if (uri.toString().startsWith("https://")) {
-            deletedFile = deletedFile.substring(8);
+        if (uri.toString().startsWith("http://")) {
+            deletedFile = deletedFile.substring(7);
         }
         // Create the path of directories to create
         // If there are a series of directories to create, get the
@@ -168,7 +171,7 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
         }
         File file = new File(directoryPathString, deletedFile);
         if (file.delete()) {
-            System.out.println(deletedFile + " deleted successfully");
+            System.out.println(deletedFile + " deleted successfully from disk");
             File directory = new File(directoryPathString);
             deleteDirectory(directory);
             return true;
@@ -180,11 +183,28 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
     }
     private void deleteDirectory(File directory) {
         if (directory.exists()) {
+            deleteDSStoreFiles(directory);
             File[] files = directory.listFiles();
-            if (files != null && files.length == 0 && !directory.toString().equals("disk")) {
+            if (files != null && files.length == 0 && !directory.getName().equals("disk")) {
                 directory.delete();
-                System.out.println("Deleted" + directory + " directory successfully");
+                System.out.println("Deleted " + directory + " directory successfully");
                 deleteDirectory(directory.getParentFile());
+            }
+        }
+    }
+    public void deleteDSStoreFiles(File directory) {
+        if (!directory.isDirectory()) {
+            return;
+        }
+        File[] allFiles = directory.listFiles();
+        if (allFiles != null && allFiles.length > 0) {
+            for (File f: allFiles) {
+                if (f.isDirectory()) {
+                    deleteDSStoreFiles(f);
+                }
+                else if (f.getName().equalsIgnoreCase(".DS_Store")) {
+                    f.delete();
+                }
             }
         }
     }

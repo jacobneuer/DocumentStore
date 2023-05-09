@@ -79,6 +79,15 @@ public class BTreeImpl<Key extends Comparable<Key>, Value> implements edu.yu.cs.
         }
         BTreeImpl.Entry entry = this.get(this.root, k, this.height);
         if (entry != null) {
+            if (entry.val instanceof File) {
+                Value v;
+                try {
+                    v = this.persistenceManager.deserialize(k);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                entry.val = v;
+            }
             return (Value) entry.val;
         }
         return null;
@@ -135,7 +144,6 @@ public class BTreeImpl<Key extends Comparable<Key>, Value> implements edu.yu.cs.
             alreadyThere.val = v;
             return oldValue;
         }
-
         BTreeImpl.Node newNode = this.put(this.root, k, v, this.height);
         this.n++;
         if (newNode == null) {
@@ -239,6 +247,26 @@ public class BTreeImpl<Key extends Comparable<Key>, Value> implements edu.yu.cs.
     public void moveToDisk(Key k) throws Exception {
         Value v = get(k);
         this.persistenceManager.serialize(k, v);
+
+        String addedFileString = k.toString() + ".json";
+        if (k.toString().startsWith("http://")) {
+            addedFileString = addedFileString.substring(7);
+        }
+        // Create the path of directories to create
+        // If there are a series of directories to create, get the
+        // file name by only taking from the last / and on
+        int lastIndex = addedFileString.lastIndexOf('/');
+        String directoryPathString = System.getProperty("user.dir");
+        if (lastIndex != -1) {
+            directoryPathString = System.getProperty("user.dir") + "/" + addedFileString.substring(0, lastIndex);
+            addedFileString = addedFileString.substring(lastIndex + 1);
+        }
+
+        File addedFile = new File(directoryPathString, addedFileString);
+        BTreeImpl.Entry uriEntry = this.get(this.root, k, this.height);
+        if(uriEntry != null) {
+            uriEntry.val = addedFile;
+        }
     }
 
     @Override
