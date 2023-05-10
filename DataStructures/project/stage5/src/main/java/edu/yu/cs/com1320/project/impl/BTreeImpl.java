@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import com.google.gson.Gson;
 import java.io.*;
+import java.util.NoSuchElementException;
 
 public class BTreeImpl<Key extends Comparable<Key>, Value> implements edu.yu.cs.com1320.project.BTree<Key, Value> {
 
@@ -246,6 +247,9 @@ public class BTreeImpl<Key extends Comparable<Key>, Value> implements edu.yu.cs.
     @Override
     public void moveToDisk(Key k) throws Exception {
         Value v = get(k);
+        if (v == null) {
+            throw new NoSuchElementException("No Such Document Exists to Move to Disk");
+        }
         this.persistenceManager.serialize(k, v);
 
         String addedFileString = k.toString() + ".json";

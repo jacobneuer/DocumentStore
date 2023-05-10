@@ -25,7 +25,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
     private int memoryStorage = 0;
     private BTreeImpl<URI, Document> bTree;
     private StackImpl<Undoable> stack;
-    private TrieImpl<Document> trie;
+    private TrieImpl<URI> trie;
     private MinHeapImpl<MinHeapNode> minHeap;
     private HashMap<URI, Integer> memoryMap;
     private List<URI> diskURIs;
@@ -35,7 +35,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         this.trie = new TrieImpl<>();
         this.minHeap = new MinHeapImpl<>();
         this.memoryMap = new HashMap<>();
-        String directoryPath = "/Users/yaacovneuer/CompSci/disk";
+        String directoryPath = System.getProperty("user.dir");
         File directory = new File(directoryPath);
         DocumentPersistenceManager documentPersistenceManager = new DocumentPersistenceManager(directory);
         this.bTree.setPersistenceManager(documentPersistenceManager);
@@ -91,7 +91,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             trieAddition(deletedDoc);
             //Update last time using the document
             deletedDoc.setLastUseTime(System.nanoTime());
-            this.minHeap.insert(deletedDoc.getKey());
+            this.minHeap.insert(new MinHeapNode(deletedDoc.getKey(), this.bTree));
             clearUpDocuments();
             return true;
         };
@@ -99,7 +99,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
     }
     private void removeFromHeap(Document deletedDoc) {
         deletedDoc.setLastUseTime(0);
-        this.minHeap.reHeapify(deletedDoc.getKey());
+        this.minHeap.reHeapify(new MinHeapNode(deletedDoc.getKey(), this.bTree));
         this.minHeap.remove();
     }
     private int putText(InputStream input, URI uri) throws IOException {
@@ -119,11 +119,11 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         this.memoryStorage = this.memoryStorage + documentStorage;
         //Update the trie
         trieAddition(newStringDoc);
-        //Update the last time using the document then put it into the heap
-        newStringDoc.setLastUseTime(System.nanoTime());
-        this.minHeap.insert(newStringDoc.getKey());
         //Put the new document into the store
         DocumentImpl oldDoc = (DocumentImpl) this.bTree.put(uri, newStringDoc);
+        //Update the last time using the document then put it into the heap
+        newStringDoc.setLastUseTime(System.nanoTime());
+        this.minHeap.insert(new MinHeapNode(newStringDoc.getKey(), this.bTree));
         //If there was an old document, delete references to it in memory, document space, trie, and heap
         if(oldDoc != null) {
             this.documentInventory = this.documentInventory - 1;
@@ -168,7 +168,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             addMemoryBack(oldStringDoc);
             //Add the old document back to the heap
             oldStringDoc.setLastUseTime(System.nanoTime());
-            this.minHeap.insert(oldStringDoc.getKey());
+            this.minHeap.insert(new MinHeapNode(oldStringDoc.getKey(), this.bTree));
             //Delete new document from trie
             trieDeletion(newStringDoc);
             //Delete new document from memory and remove from heap
@@ -216,13 +216,13 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
     private void trieAddition(DocumentImpl doc){
         Set<String> allWords = doc.getWords();
         for(String s: allWords) {
-            this.trie.put(s, doc);
+            this.trie.put(s, doc.getKey());
         }
     }
     private void trieDeletion(DocumentImpl doc){
         Set<String> allWords = doc.getWords();
         for(String s: allWords) {
-            this.trie.delete(s, doc);
+            this.trie.delete(s, doc.getKey());
         }
     }
     private int putBinary(InputStream input, URI uri) throws IOException{
@@ -239,11 +239,11 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         isDocumentLargerThanMemoryMaximum(documentStorage);
         this.memoryMap.put(newBinaryDoc.getKey(), documentStorage);
         this.memoryStorage = this.memoryStorage + documentStorage;
-        //Update the last time using the document and put the new document in heap
-        newBinaryDoc.setLastUseTime(System.nanoTime());
-        this.minHeap.insert(newBinaryDoc.getKey());
         //Place the new binary document into the table
         DocumentImpl oldBinaryDoc = (DocumentImpl) this.bTree.put(uri, newBinaryDoc);
+        //Update the last time using the document and put the new document in heap
+        newBinaryDoc.setLastUseTime(System.nanoTime());
+        this.minHeap.insert(new MinHeapNode(newBinaryDoc.getKey(), this.bTree));
         //If an old binary document is being replaced, delete references to it in memory, document space, and heap
         if(oldBinaryDoc != null) {
             this.documentInventory = this.documentInventory - 1;
@@ -283,7 +283,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             this.memoryStorage = this.memoryStorage + oldBinaryDoc.getDocumentBinaryData().length;
             //Update the old binary document's last use time and put it back in the heap
             oldBinaryDoc.setLastUseTime(System.nanoTime());
-            this.minHeap.insert(oldBinaryDoc.getKey());
+            this.minHeap.insert(new MinHeapNode(oldBinaryDoc.getKey(), this.bTree));
             clearUpDocuments();
             return true;
         };
@@ -319,14 +319,14 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             //Update memory
             addMemoryBack(getDocumentImpl);
             getDocumentImpl.setLastUseTime(System.nanoTime());
-            this.minHeap.insert(getDocumentImpl.getKey());
+            this.minHeap.insert(new MinHeapNode(getDocumentImpl.getKey(), this.bTree));
             clearUpDocuments();
         }
         Document getDocument = this.bTree.get(uri);
         if (getDocument != null){
             //Update last time using the document
             getDocument.setLastUseTime(System.nanoTime());
-            this.minHeap.reHeapify(getDocument.getKey());
+            this.minHeap.reHeapify(new MinHeapNode(getDocument.getKey(), this.bTree));
         }
         return getDocument;
     }
@@ -361,7 +361,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             //Update memory
             addMemoryBack(deletedDoc);
             deletedDoc.setLastUseTime(System.nanoTime());
-            this.minHeap.insert(deletedDoc.getKey());
+            this.minHeap.insert(new MinHeapNode(deletedDoc.getKey(), this.bTree));
             clearUpDocuments();
             return true;
         };
@@ -449,7 +449,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         long updateTime = System.nanoTime();
         for(Document d: documents) {
             d.setLastUseTime(updateTime);
-            this.minHeap.reHeapify(d.getKey());
+            this.minHeap.reHeapify(new MinHeapNode(d.getKey(), this.bTree));
         }
         return documents;
     }
@@ -462,7 +462,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         long updateTime = System.nanoTime();
         for(Document d: documents) {
             d.setLastUseTime(updateTime);
-            this.minHeap.reHeapify(d.getKey());
+            this.minHeap.reHeapify(new MinHeapNode(d.getKey(), this.bTree));
         }
         return documents;
     }
@@ -564,7 +564,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             }
             //Add back into heap
             d.setLastUseTime(System.nanoTime());
-            this.minHeap.insert(d.getKey());
+            this.minHeap.insert(new MinHeapNode(d.getKey(), this.bTree));
             //Update space/memory
             clearUpDocuments();
             return true;
@@ -624,7 +624,8 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         //If number of documents are full then remove until space is cleared
         if(this.maxDocumentCount != null) {
             while(this.documentInventory > this.maxDocumentCount) {
-                URI deletedDocURI = this.minHeap.remove();
+                MinHeapNode minHeapNode = this.minHeap.remove();
+                URI deletedDocURI = minHeapNode.uri;
                 try {
                     this.bTree.moveToDisk(deletedDocURI);
                     this.diskURIs.add(deletedDocURI);
@@ -640,7 +641,8 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         //If storage is full then delete documents until there's enough memory
         if(this.maxDocumentBytes != null) {
             while(this.memoryStorage > this.maxDocumentBytes) {
-                URI deletedDocURI = this.minHeap.remove();
+                MinHeapNode minHeapNode = this.minHeap.remove();
+                URI deletedDocURI = minHeapNode.uri;
                 try {
                     this.bTree.moveToDisk(deletedDocURI);
                     this.diskURIs.add(deletedDocURI);
@@ -694,25 +696,46 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
     }
     private class MinHeapNode implements Comparable<MinHeapNode> {
         URI uri;
-        BTreeImpl<URI, Document> btree;
+        BTreeImpl<URI, Document> nodeBTree;
         long lastUseTime; // the last use time of the URI being stored
         MinHeapNode(URI uri, BTreeImpl<URI, Document> bTree) {
             this.uri = uri;
-            this.btree = bTree;
-            lastUseTime = btree.get(uri).getLastUseTime();
+            this.nodeBTree = bTree;
+            lastUseTime = System.nanoTime();
         }
         private long getLastUseTime() {
-            return this.btree.get(uri).getLastUseTime();
+            updateLastUseTime();
+            return this.lastUseTime;
         }
         private void updateLastUseTime() {
-            this.lastUseTime = this.btree.get(uri).getLastUseTime();
+            this.lastUseTime = this.nodeBTree.get(this.uri).getLastUseTime();
         }
+
+        @Override
+        public String toString() {
+            return "MinHeapNode{" +
+                    "uri=" + uri +
+                    '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            MinHeapNode that = (MinHeapNode) o;
+            return uri.toString().equals(that.uri.toString());
+        }
+
         @Override
         public int compareTo(DocumentStoreImpl.MinHeapNode minHeapNode) {
             if (minHeapNode == null) {
                 throw new NullPointerException("Can't compare a MinHeapNode to a null value");
             }
-            updateLastUseTime();
+            minHeapNode.updateLastUseTime();
             if (this.lastUseTime > minHeapNode.getLastUseTime()) {
                 return 1;
             }

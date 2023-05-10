@@ -7,7 +7,7 @@ import java.util.*;
 
 public class DocumentImpl implements Document {
 
-    private transient long lastUseTime;
+    private long lastUseTime;
     private URI uri;
     private String documentText;
     private byte[] byteArray;

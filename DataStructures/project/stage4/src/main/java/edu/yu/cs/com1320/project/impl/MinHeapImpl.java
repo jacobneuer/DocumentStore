@@ -1,7 +1,6 @@
 package edu.yu.cs.com1320.project.impl;
 
 import edu.yu.cs.com1320.project.MinHeap;
-import edu.yu.cs.com1320.project.stage4.Document;
 
 import java.util.NoSuchElementException;
 
