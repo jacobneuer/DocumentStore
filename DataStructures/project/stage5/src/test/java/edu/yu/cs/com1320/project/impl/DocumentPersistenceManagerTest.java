@@ -110,7 +110,7 @@ public class DocumentPersistenceManagerTest {
     @Test
     public void testSeven() throws IOException {
         String docText = "This is a Document String Text";
-        URI uri = create("http://DocumentURI");
+        URI uri = create("https://DocumentURI");
         DocumentImpl doc = new DocumentImpl(uri, docText);
         this.dpm.serialize(uri, doc);
     }
@@ -187,5 +187,21 @@ public class DocumentPersistenceManagerTest {
         assertEquals(doc2.getKey(), d2.getKey());
         assertEquals(doc2.getDocumentTxt(), d2.getDocumentTxt());
         assertEquals(doc2.getWordMap(), d2.getWordMap());
+    }
+    @DisplayName("Create files to be sent to disk from weird uris")
+    @Test
+    public void testFourteen() throws IOException {
+        String docText = "This is a Document String Text";
+        URI uri = create("http://www.yu.edu/documents/doc1");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        System.out.println("scheme: " + uri.getScheme());
+        System.out.println("SSP: " + uri.getSchemeSpecificPart());
+        System.out.println("authority: " + uri.getAuthority());
+        System.out.println("user info: " + uri.getUserInfo());
+        System.out.println("host: " + uri.getHost());
+        System.out.println("port: " + uri.getPort());
+        System.out.println("path: " + uri.getPath());
+        System.out.println("query: " + uri.getQuery());
+        System.out.println("fragment: " + uri.getFragment());
     }
 }

@@ -1,14 +1,12 @@
 package edu.yu.cs.com1320.project.stage5.impl;
 
 import com.google.gson.*;
-import com.google.gson.reflect.TypeToken;
 import edu.yu.cs.com1320.project.stage5.Document;
 import edu.yu.cs.com1320.project.stage5.PersistenceManager;
 
 import java.net.URISyntaxException;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.io.*;
 import java.io.FileWriter;
@@ -18,8 +16,6 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.io.IOException;
 
 /**
  * created by the document store and given to the BTree via a call to BTree.setPersistenceManager
@@ -55,8 +51,8 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
         JsonElement jsonElement = serializer.serialize(val, null, null);
         String fileName = uri.toString() + ".json";
         //Remove http:// to create the file name
-        if (uri.toString().startsWith("http://")) {
-            fileName = fileName.substring(7);
+        if (uri.getScheme() != null) {
+            fileName = fileName.substring(uri.getScheme().length() + 3);
         }
         // Create the path of directories to create
         // If there are a series of directories to create, get the
@@ -95,8 +91,8 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
     @Override
     public Document deserialize(URI uri) throws IOException {
         String fileName = uri.toString() + ".json";
-        if (uri.toString().startsWith("http://")) {
-            fileName = fileName.substring(7);
+        if (uri.getScheme() != null) {
+            fileName = fileName.substring(uri.getScheme().length() + 3);
         }
         int lastIndex = fileName.lastIndexOf('/');
         String directoryPathString = "";
@@ -157,8 +153,8 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
     @Override
     public boolean delete(URI uri) throws IOException {
         String deletedFile = uri.toString() + ".json";
-        if (uri.toString().startsWith("http://")) {
-            deletedFile = deletedFile.substring(7);
+        if (uri.getScheme() != null) {
+            deletedFile = deletedFile.substring(uri.getScheme().length() + 3);
         }
         // Create the path of directories to create
         // If there are a series of directories to create, get the

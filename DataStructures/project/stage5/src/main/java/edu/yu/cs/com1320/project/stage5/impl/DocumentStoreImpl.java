@@ -308,14 +308,14 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
 
     @Override
     public Document get(URI uri) {
-        /*if (this.maxDocumentCount == 0) {
+        if (this.maxDocumentCount != null && this.maxDocumentCount == 0) {
             return null;
-        }*/
+        }
         DocumentImpl getDocumentImpl;
         if (this.diskURIs.contains(uri)) {
             this.diskURIs.remove(uri);
             getDocumentImpl = (DocumentImpl) this.bTree.get(uri);
-            /*if(getDocumentImpl.getDocumentTxt() == null) {
+            if(getDocumentImpl.getDocumentTxt() == null) {
                 if(this.maxDocumentBytes != null && getDocumentImpl.getDocumentBinaryData().length > this.maxDocumentBytes) {
                     clearUpDocuments();
                     return null;
@@ -326,7 +326,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
                     clearUpDocuments();
                     return null;
                 }
-            }*/
+            }
             this.documentInventory = this.documentInventory + 1;
             trieAddition(getDocumentImpl);
             //Update memory
