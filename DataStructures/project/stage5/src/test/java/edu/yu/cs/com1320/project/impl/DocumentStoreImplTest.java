@@ -585,13 +585,13 @@ public class DocumentStoreImplTest {
         documentStore.put(targetStream4, uri4, DocumentStore.DocumentFormat.TXT);
         documentStore.setMaxDocumentCount(2);
         Document d = documentStore.get(uri);
-        assertNull(d);
+        assertEquals(d, doc);
         Document d2 = documentStore.get(uri2);
-        assertNull(d2);
+        assertEquals(d2, doc2);
         Document d3 = documentStore.get(uri3);
         Document d4 = documentStore.get(uri4);
-        assertEquals(doc3, d3);
-        assertEquals(doc4, d4);
+        assertEquals(d3, doc3);
+        assertEquals(d4, doc4);
     }
     @DisplayName("Test that Get Updates the Time")
     @Test
@@ -619,7 +619,7 @@ public class DocumentStoreImplTest {
         documentStore.get(uri);
         documentStore.setMaxDocumentCount(3);
         Document d = documentStore.get(uri2);
-        assertNull(d);
+        assertEquals(d, doc2);
     }
     @DisplayName("Test that Search Updates the Document Times")
     @Test
@@ -647,7 +647,7 @@ public class DocumentStoreImplTest {
         documentStore.search("love");
         documentStore.setMaxDocumentCount(3);
         Document d = documentStore.get(uri4);
-        assertNull(d);
+        assertEquals(d, doc4);
     }
     @DisplayName("Test that Search With Prefix Updates the Document Times")
     @Test
@@ -675,7 +675,7 @@ public class DocumentStoreImplTest {
         documentStore.searchByPrefix("love");
         documentStore.setMaxDocumentCount(3);
         Document d = documentStore.get(uri4);
-        assertNull(d);
+        assertEquals(d, doc4);
     }
     @DisplayName("Test Max Memory Count")
     @Test
@@ -720,13 +720,13 @@ public class DocumentStoreImplTest {
         documentStore.put(targetStream4, uri4, DocumentStore.DocumentFormat.TXT);
         documentStore.setMaxDocumentBytes(63);
         Document d = documentStore.get(uri);
-        assertNull(d);
+        assertEquals(d, doc);
         Document d2 = documentStore.get(uri2);
-        assertNull(d2);
+        assertEquals(d2, doc2);
         Document d3 = documentStore.get(uri3);
         Document d4 = documentStore.get(uri4);
-        assertEquals(doc3, d3);
-        assertEquals(doc4, d4);
+        assertEquals(d3, doc3);
+        assertEquals(d4, doc4);
     }
     @DisplayName("Test that Get Updates the Time")
     @Test
@@ -754,7 +754,7 @@ public class DocumentStoreImplTest {
         documentStore.get(uri);
         documentStore.setMaxDocumentBytes(65);
         Document d = documentStore.get(uri2);
-        assertNull(d);
+        assertEquals(d, doc2);
     }
     @DisplayName("Test that Search Updates the Document Times")
     @Test
@@ -782,7 +782,7 @@ public class DocumentStoreImplTest {
         documentStore.search("love");
         documentStore.setMaxDocumentBytes(65);
         Document d = documentStore.get(uri4);
-        assertNull(d);
+        assertEquals(d, doc4);
     }
     @DisplayName("Test that Search With Prefix Updates the Document Times")
     @Test
@@ -810,7 +810,7 @@ public class DocumentStoreImplTest {
         documentStore.searchByPrefix("love");
         documentStore.setMaxDocumentBytes(65);
         Document d = documentStore.get(uri4);
-        assertNull(d);
+        assertEquals(d, doc4);
     }
     @DisplayName("Test Max Document Count Works After Put Undo")
     @Test
@@ -835,7 +835,7 @@ public class DocumentStoreImplTest {
         Document test = documentStore.get(uri);
         Document test2 = documentStore.get(uri2);
         Document test3 = documentStore.get(uri3);
-        assertNull(test);
+        assertEquals(doc, test);
         assertEquals(doc2, test2);
         assertNull(test3);
     }
@@ -861,7 +861,7 @@ public class DocumentStoreImplTest {
         documentStore.setMaxDocumentCount(2);
         documentStore.undo();
         Document test = documentStore.get(uri2);
-        assertNull(test);
+        assertEquals(test, doc2);
     }
     @DisplayName("Test Replacing Document")
     @Test

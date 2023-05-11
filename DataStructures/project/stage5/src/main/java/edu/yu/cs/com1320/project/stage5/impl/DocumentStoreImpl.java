@@ -35,9 +35,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         this.trie = new TrieImpl<>();
         this.minHeap = new MinHeapImpl<>();
         this.memoryMap = new HashMap<>();
-        String directoryPath = System.getProperty("user.dir");
-        File directory = new File(directoryPath);
-        DocumentPersistenceManager documentPersistenceManager = new DocumentPersistenceManager(directory);
+        DocumentPersistenceManager documentPersistenceManager = new DocumentPersistenceManager();
         this.bTree.setPersistenceManager(documentPersistenceManager);
         this.diskURIs = new ArrayList<>();
     }
@@ -111,7 +109,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             throw new IOException("String Input Stream Not Given Correctly");
         }
         //Create the new document
-        DocumentImpl newStringDoc = new DocumentImpl(uri, text);
+        DocumentImpl newStringDoc = new DocumentImpl(uri, text, null);
         //Update the memory map
         int documentStorage = newStringDoc.getDocumentTxt().getBytes().length;
         isDocumentLargerThanMemoryMaximum(documentStorage);
@@ -147,11 +145,11 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
     private int newPutUndo (URI uri, DocumentImpl newStringDoc){
         //Creates an Undo function to delete the new document that was put in the store
         Function<URI, Boolean> deleteFunction = (x) -> {
+            removeFromHeap(newStringDoc);
             this.bTree.put(x, null);
             //Update memory
             deleteMemory(newStringDoc, false);
             trieDeletion(newStringDoc);
-            removeFromHeap(newStringDoc);
             return true;
         };
         GenericCommand<URI> undoNewPut = new GenericCommand<>(uri, deleteFunction);
@@ -295,11 +293,11 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
     private int newBinaryPutUndo(URI uri, DocumentImpl newBinaryDoc, int documentStorage) {
         //Add undo function to the stack to delete the new document being added to the store
         Function<URI, Boolean> deleteFunction = (x) -> {
+            this.memoryMap.remove(newBinaryDoc);
             this.bTree.put(x, null);
             this.documentInventory = this.documentInventory - 1;
             removeFromHeap(newBinaryDoc);
             //Update the memory
-            this.memoryMap.remove(newBinaryDoc);
             this.memoryStorage = this.memoryStorage - documentStorage;
             return true;
         };
@@ -310,10 +308,25 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
 
     @Override
     public Document get(URI uri) {
+        /*if (this.maxDocumentCount == 0) {
+            return null;
+        }*/
         DocumentImpl getDocumentImpl;
         if (this.diskURIs.contains(uri)) {
             this.diskURIs.remove(uri);
             getDocumentImpl = (DocumentImpl) this.bTree.get(uri);
+            /*if(getDocumentImpl.getDocumentTxt() == null) {
+                if(this.maxDocumentBytes != null && getDocumentImpl.getDocumentBinaryData().length > this.maxDocumentBytes) {
+                    clearUpDocuments();
+                    return null;
+                }
+            }
+            else {
+                if(this.maxDocumentBytes != null && getDocumentImpl.getDocumentTxt().getBytes().length > this.maxDocumentBytes) {
+                    clearUpDocuments();
+                    return null;
+                }
+            }*/
             this.documentInventory = this.documentInventory + 1;
             trieAddition(getDocumentImpl);
             //Update memory
@@ -432,58 +445,68 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
     }
     @Override
     public List<Document> search(String keyword) {
-        Comparator<Document> comparator = new Comparator<Document>() {
+        Comparator<URI> comparator = new Comparator<URI>() {
             @Override
-            public int compare(Document o1, Document o2) {
-                if (o1.wordCount(keyword) < o2.wordCount(keyword)) {
+            public int compare(URI o1, URI o2) {
+                if (bTree.get(o1).wordCount(keyword) < bTree.get(o2).wordCount(keyword)) {
                     return 1;
                 }
-                if (o1.wordCount(keyword) > o2.wordCount(keyword)) {
+                if (bTree.get(o1).wordCount(keyword) > bTree.get(o2).wordCount(keyword)) {
                     return -1;
                 }
                 return 0;
             }
         };
-        List<Document> documents = this.trie.getAllSorted(keyword, comparator);
+        List<URI> uris = this.trie.getAllSorted(keyword, comparator);
+        List<Document> documents = new ArrayList<>();
+        for (URI uri: uris) {
+            documents.add(this.bTree.get(uri));
+        }
         //Update last time using each of the documents
         long updateTime = System.nanoTime();
         for(Document d: documents) {
             d.setLastUseTime(updateTime);
             this.minHeap.reHeapify(new MinHeapNode(d.getKey(), this.bTree));
         }
+        clearUpDocuments();
         return documents;
     }
 
     @Override
     public List<Document> searchByPrefix(String keywordPrefix) {
-        Comparator<Document> comparator = searchByPrefixComparator(keywordPrefix);
-        List<Document> documents = this.trie.getAllWithPrefixSorted(keywordPrefix, comparator);
+        Comparator<URI> comparator = searchByPrefixComparator(keywordPrefix);
+        List<URI> uris = this.trie.getAllWithPrefixSorted(keywordPrefix, comparator);
+        List<Document> documents = new ArrayList<>();
+        for (URI uri: uris) {
+            documents.add(this.bTree.get(uri));
+        }
         //Update last time using each of the documents
         long updateTime = System.nanoTime();
         for(Document d: documents) {
             d.setLastUseTime(updateTime);
             this.minHeap.reHeapify(new MinHeapNode(d.getKey(), this.bTree));
         }
+        clearUpDocuments();
         return documents;
     }
-    private Comparator<Document> searchByPrefixComparator (String keywordPrefix) {
-        Comparator<Document> comparator = new Comparator<Document>() {
+    private Comparator<URI> searchByPrefixComparator (String keywordPrefix) {
+        Comparator<URI> comparator = new Comparator<URI>() {
             @Override
-            public int compare(Document o1, Document o2) {
+            public int compare(URI o1, URI o2) {
                 //Find the number of instances of words that begin with the given prefix in document 1
-                Set<String> set1 = o1.getWords();
+                Set<String> set1 = bTree.get(o1).getWords();
                 int count1 = 0;
                 for(String s: set1) {
                     if(s.startsWith(keywordPrefix)) {
-                        count1 = count1 + o1.wordCount(s);
+                        count1 = count1 + bTree.get(o1).wordCount(s);
                     }
                 }
                 //Find the number of instances of words that begin with the given prefix in document 2
-                Set<String> set2 = o2.getWords();
+                Set<String> set2 = bTree.get(o2).getWords();
                 int count2 = 0;
                 for(String s: set2) {
                     if(s.startsWith(keywordPrefix)) {
-                        count2 = count2 + o2.wordCount(s);
+                        count2 = count2 + bTree.get(o2).wordCount(s);
                     }
                 }
                 //Compare each of those totals
@@ -501,7 +524,11 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
     @Override
     public Set<URI> deleteAll(String keyword) {
         //First collect the documents that need to be deleted from the store
-        Set<Document> deletedDocuments = this.trie.deleteAll(keyword);
+        Set<URI> uris = this.trie.deleteAll(keyword);
+        Set<Document> deletedDocuments = new HashSet<>();
+        for (URI uri: uris) {
+            deletedDocuments.add(this.bTree.get(uri));
+        }
         Set<URI> deletedURIs = new HashSet<>();
         if(deletedDocuments.size() > 1) {
             return deleteMultipleDocuments(deletedDocuments, deletedURIs);
@@ -602,7 +629,11 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
     @Override
     public Set<URI> deleteAllWithPrefix(String keywordPrefix) {
         //First collect the documents that need to be deleted from the store
-        Set<Document> deletedDocuments = this.trie.deleteAllWithPrefix(keywordPrefix);
+        Set<URI> uris = this.trie.deleteAllWithPrefix(keywordPrefix);
+        Set<Document> deletedDocuments = new HashSet<>();
+        for (URI uri: uris) {
+            deletedDocuments.add(this.bTree.get(uri));
+        }
         Set<URI> deletedURIs = new HashSet<>();
         if(deletedDocuments.size() > 1) {
             return deleteMultipleDocuments(deletedDocuments, deletedURIs);
