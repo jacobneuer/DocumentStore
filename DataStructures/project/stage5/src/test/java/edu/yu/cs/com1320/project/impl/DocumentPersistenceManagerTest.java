@@ -192,7 +192,7 @@ public class DocumentPersistenceManagerTest {
     @Test
     public void testFourteen() throws IOException {
         String docText = "This is a Document String Text";
-        URI uri = create("http://www.yu.edu/documents/doc1");
+        URI uri = create("mailto:java-net@www.example.com");
         DocumentImpl doc = new DocumentImpl(uri, docText);
         System.out.println("scheme: " + uri.getScheme());
         System.out.println("SSP: " + uri.getSchemeSpecificPart());

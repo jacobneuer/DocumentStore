@@ -2,9 +2,7 @@ package edu.yu.cs.com1320.project.impl;
 
 import edu.yu.cs.com1320.project.stage5.PersistenceManager;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import com.google.gson.Gson;
 import java.io.*;
 import java.util.NoSuchElementException;
 
@@ -19,7 +17,7 @@ public class BTreeImpl<Key extends Comparable<Key>, Value> implements edu.yu.cs.
     private int n; //number of key-value pairs in the B-tree
 
     //B-tree node data type
-    private static final class Node {
+    private class Node {
         private int entryCount; // number of entries
         private BTreeImpl.Entry[] entries = new BTreeImpl.Entry[BTreeImpl.MAX]; // the array of children
         private BTreeImpl.Node next;
@@ -47,7 +45,7 @@ public class BTreeImpl<Key extends Comparable<Key>, Value> implements edu.yu.cs.
 
     //internal nodes: only use key and child
     //external nodes: only use key and value
-    public static class Entry {
+    private class Entry {
         private Comparable key;
         private Object val;
         private BTreeImpl.Node child;

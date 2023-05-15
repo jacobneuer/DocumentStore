@@ -39,6 +39,16 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         this.bTree.setPersistenceManager(documentPersistenceManager);
         this.diskURIs = new ArrayList<>();
     }
+    public DocumentStoreImpl(File baseDir) {
+        this.bTree = new BTreeImpl<>();
+        this.stack = new StackImpl<>();
+        this.trie = new TrieImpl<>();
+        this.minHeap = new MinHeapImpl<>();
+        this.memoryMap = new HashMap<>();
+        DocumentPersistenceManager documentPersistenceManager = new DocumentPersistenceManager(baseDir);
+        this.bTree.setPersistenceManager(documentPersistenceManager);
+        this.diskURIs = new ArrayList<>();
+    }
 
     @Override
     public int put(InputStream input, URI uri, DocumentFormat format) throws IOException {
