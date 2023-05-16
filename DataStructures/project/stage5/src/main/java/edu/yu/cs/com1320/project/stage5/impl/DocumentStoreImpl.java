@@ -318,32 +318,16 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
 
     @Override
     public Document get(URI uri) {
-        if (this.maxDocumentCount != null && this.maxDocumentCount == 0) {
-            return null;
-        }
         DocumentImpl getDocumentImpl;
         if (this.diskURIs.contains(uri)) {
             this.diskURIs.remove(uri);
             getDocumentImpl = (DocumentImpl) this.bTree.get(uri);
-            if(getDocumentImpl.getDocumentTxt() == null) {
-                if(this.maxDocumentBytes != null && getDocumentImpl.getDocumentBinaryData().length > this.maxDocumentBytes) {
-                    clearUpDocuments();
-                    return null;
-                }
-            }
-            else {
-                if(this.maxDocumentBytes != null && getDocumentImpl.getDocumentTxt().getBytes().length > this.maxDocumentBytes) {
-                    clearUpDocuments();
-                    return null;
-                }
-            }
             this.documentInventory = this.documentInventory + 1;
             trieAddition(getDocumentImpl);
             //Update memory
             addMemoryBack(getDocumentImpl);
             getDocumentImpl.setLastUseTime(System.nanoTime());
             this.minHeap.insert(new MinHeapNode(getDocumentImpl.getKey(), this.bTree));
-            clearUpDocuments();
         }
         Document getDocument = this.bTree.get(uri);
         if (getDocument != null){
@@ -351,6 +335,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             getDocument.setLastUseTime(System.nanoTime());
             this.minHeap.reHeapify(new MinHeapNode(getDocument.getKey(), this.bTree));
         }
+        clearUpDocuments();
         return getDocument;
     }
 

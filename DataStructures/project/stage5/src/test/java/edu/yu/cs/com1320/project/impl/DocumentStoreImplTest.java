@@ -558,7 +558,7 @@ public class DocumentStoreImplTest {
         documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
         documentStore.setMaxDocumentCount(0);
         Document d = documentStore.get(uri);
-        assertNull(d);
+        assertEquals(d, doc);
     }
     @DisplayName("Test Max Document Count Deleted the Oldest Ones")
     @Test
@@ -689,7 +689,7 @@ public class DocumentStoreImplTest {
         documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
         documentStore.setMaxDocumentBytes(0);
         Document d = documentStore.get(uri);
-        assertNull(d);
+        assertEquals(d, doc);
     }
     @DisplayName("Test Max Memory Deletes the Oldest Ones")
     @Test

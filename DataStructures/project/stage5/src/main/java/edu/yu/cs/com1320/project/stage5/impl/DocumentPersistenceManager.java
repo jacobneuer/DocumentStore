@@ -32,6 +32,9 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
 
     @Override
     public void serialize(URI uri, Document val) throws IOException {
+        if (uri == null) {
+            throw new IllegalArgumentException("Can't serialize a null URI");
+        }
         Gson gson = new Gson();
         JsonSerializer<Document> serializer = new JsonSerializer<Document>() {
             @Override
@@ -90,6 +93,9 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
 
     @Override
     public Document deserialize(URI uri) throws IOException {
+        if (uri == null) {
+            throw new IllegalArgumentException("Can't serialize a null URI");
+        }
         String fileName = uri.toString() + ".json";
         if (uri.getScheme() != null) {
             fileName = fileName.substring(uri.getScheme().length() + 3);
@@ -138,10 +144,13 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
                     }
                     return new DocumentImpl(uri, documentText, wordMap);
                 }
-                catch (Exception e) {
+                catch (NullPointerException e) {
                     JsonElement byteElement = jsonObject.get("byteArray");
                     byte[] byteArray = Base64.getDecoder().decode(byteElement.getAsString());
                     return new DocumentImpl(uri, byteArray);
+                }
+                catch (Exception e) {
+                   throw new RuntimeException("Deserialization failed");
                 }
             }
         };
