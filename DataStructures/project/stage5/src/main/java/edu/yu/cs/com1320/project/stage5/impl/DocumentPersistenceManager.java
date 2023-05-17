@@ -1,11 +1,12 @@
 package edu.yu.cs.com1320.project.stage5.impl;
 
+import jakarta.xml.bind.DatatypeConverter;
+
 import com.google.gson.*;
 import edu.yu.cs.com1320.project.stage5.Document;
 import edu.yu.cs.com1320.project.stage5.PersistenceManager;
 
 import java.net.URISyntaxException;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.io.*;
@@ -23,10 +24,11 @@ import java.nio.file.Paths;
 public class DocumentPersistenceManager implements PersistenceManager<URI, Document> {
 
     private final String baseDir;
-    public DocumentPersistenceManager(){
-        this.baseDir = System.getProperty("user.dir");
-    }
-    public DocumentPersistenceManager(File baseDir){
+    public DocumentPersistenceManager(File baseDir) {
+        if (baseDir == null) {
+            this.baseDir = System.getProperty("user.dir");
+            return;
+        }
         this.baseDir = baseDir.toString();
     }
 
@@ -46,22 +48,34 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
                     json.add("wordMap", gson.toJsonTree(document.getWordMap()));
                 }
                 else {
-                    json.addProperty("byteArray", Base64.getEncoder().encodeToString(document.getDocumentBinaryData()));
+                    json.addProperty("byteArray", DatatypeConverter.printBase64Binary(document.getDocumentBinaryData()));
                 }
                 return json;
             }
         };
         JsonElement jsonElement = serializer.serialize(val, null, null);
         String fileName = uri.toString() + ".json";
+        String directoryPathString = "";
+        //Remove mailto: to create the file name
+        if (fileName.startsWith("mailto:")) {
+            fileName = fileName.substring(0, fileName.length() - 5);
+            fileName = fileName.substring(uri.getScheme().length() + 1);
+            directoryPathString = fileName.substring(fileName.indexOf('@') + 1);
+            fileName = fileName.substring(0, fileName.indexOf('@'));
+            fileName = fileName + ".json";
+        }
         //Remove http:// to create the file name
-        if (uri.getScheme() != null) {
+        if (fileName.startsWith("https://")) {
+            fileName = fileName.substring(uri.getScheme().length() + 3);
+        }
+        //Remove http:// to create the file name
+        if (fileName.startsWith("http://")) {
             fileName = fileName.substring(uri.getScheme().length() + 3);
         }
         // Create the path of directories to create
         // If there are a series of directories to create, get the
         // file name by only taking from the last / and on
         int lastIndex = fileName.lastIndexOf('/');
-        String directoryPathString = "";
         if (lastIndex != -1) {
             directoryPathString = fileName.substring(0, lastIndex);
             fileName = fileName.substring(lastIndex + 1);
@@ -97,11 +111,25 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
             throw new IllegalArgumentException("Can't serialize a null URI");
         }
         String fileName = uri.toString() + ".json";
-        if (uri.getScheme() != null) {
+        String directoryPathString = "";
+        //Try to find path assuming uri begins with http
+        //Remove mailto: to create the file name
+        if (fileName.startsWith("mailto:")) {
+            fileName = fileName.substring(0, fileName.length() - 5);
+            fileName = fileName.substring(uri.getScheme().length() + 1);
+            directoryPathString = fileName.substring(fileName.indexOf('@') + 1);
+            fileName = fileName.substring(0, fileName.indexOf('@'));
+            fileName = fileName + ".json";
+        }
+        //Remove http:// to create the file name
+        if (fileName.startsWith("https://")) {
+            fileName = fileName.substring(uri.getScheme().length() + 3);
+        }
+        //Remove http:// to create the file name
+        if (fileName.startsWith("http://")) {
             fileName = fileName.substring(uri.getScheme().length() + 3);
         }
         int lastIndex = fileName.lastIndexOf('/');
-        String directoryPathString = "";
         if (lastIndex != -1) {
             directoryPathString = fileName.substring(0, lastIndex);
             fileName = fileName.substring(lastIndex + 1);
@@ -146,7 +174,7 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
                 }
                 catch (NullPointerException e) {
                     JsonElement byteElement = jsonObject.get("byteArray");
-                    byte[] byteArray = Base64.getDecoder().decode(byteElement.getAsString());
+                    byte[] byteArray = DatatypeConverter.parseBase64Binary(byteElement.getAsString());
                     return new DocumentImpl(uri, byteArray);
                 }
                 catch (Exception e) {
@@ -162,14 +190,27 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
     @Override
     public boolean delete(URI uri) throws IOException {
         String deletedFile = uri.toString() + ".json";
-        if (uri.getScheme() != null) {
+        String directoryPathString = this.baseDir;
+        //Remove mailto: to create the file name
+        if (deletedFile.startsWith("mailto:")) {
+            deletedFile = deletedFile.substring(0, deletedFile.length() - 5);
+            deletedFile = deletedFile.substring(uri.getScheme().length() + 1);
+            directoryPathString = this.baseDir + "/" + deletedFile.substring(deletedFile.indexOf('@') + 1);
+            deletedFile = deletedFile.substring(0, deletedFile.indexOf('@'));
+            deletedFile = deletedFile + ".json";
+        }
+        //Remove http:// to create the file name
+        if (deletedFile.startsWith("https://")) {
+            deletedFile = deletedFile.substring(uri.getScheme().length() + 3);
+        }
+        //Remove http:// to create the file name
+        if (deletedFile.startsWith("http://")) {
             deletedFile = deletedFile.substring(uri.getScheme().length() + 3);
         }
         // Create the path of directories to create
         // If there are a series of directories to create, get the
         // file name by only taking from the last / and on
         int lastIndex = deletedFile.lastIndexOf('/');
-        String directoryPathString = this.baseDir;
         if (lastIndex != -1) {
             directoryPathString = this.baseDir + "/" + deletedFile.substring(0, lastIndex);
             deletedFile = deletedFile.substring(lastIndex + 1);

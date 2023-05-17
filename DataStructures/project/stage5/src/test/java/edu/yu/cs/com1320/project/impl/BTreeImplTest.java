@@ -138,7 +138,7 @@ public class BTreeImplTest {
         DocumentImpl doc = new DocumentImpl(uri, docText);
         BTreeImpl<URI, Document> documentBTree = new BTreeImpl<>();
         documentBTree.put(uri, doc);
-        DocumentPersistenceManager dpm = new DocumentPersistenceManager();
+        DocumentPersistenceManager dpm = new DocumentPersistenceManager(null);
         documentBTree.setPersistenceManager(dpm);
         documentBTree.moveToDisk(uri);
     }

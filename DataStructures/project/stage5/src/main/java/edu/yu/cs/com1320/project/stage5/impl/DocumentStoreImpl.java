@@ -1,13 +1,11 @@
 package edu.yu.cs.com1320.project.stage5.impl;
 
-import com.sun.jdi.Value;
 import edu.yu.cs.com1320.project.CommandSet;
 import edu.yu.cs.com1320.project.GenericCommand;
 import edu.yu.cs.com1320.project.Undoable;
 import edu.yu.cs.com1320.project.impl.*;
 import edu.yu.cs.com1320.project.stage5.Document;
 import edu.yu.cs.com1320.project.stage5.DocumentStore;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,7 +33,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         this.trie = new TrieImpl<>();
         this.minHeap = new MinHeapImpl<>();
         this.memoryMap = new HashMap<>();
-        DocumentPersistenceManager documentPersistenceManager = new DocumentPersistenceManager();
+        DocumentPersistenceManager documentPersistenceManager = new DocumentPersistenceManager(null);
         this.bTree.setPersistenceManager(documentPersistenceManager);
         this.diskURIs = new ArrayList<>();
     }
@@ -661,7 +659,6 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
                 this.documentInventory = this.documentInventory - 1;
                 this.memoryStorage = this.memoryStorage - this.memoryMap.get(deletedDocURI);
                 this.memoryMap.remove(deletedDocURI);
-                deleteUndo(deletedDocURI);
             }
         }
         //If storage is full then delete documents until there's enough memory
@@ -678,7 +675,6 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
                 this.documentInventory = this.documentInventory - 1;
                 this.memoryStorage = this.memoryStorage - this.memoryMap.get(deletedDocURI);
                 this.memoryMap.remove(deletedDocURI);
-                deleteUndo(deletedDocURI);
             }
         }
     }

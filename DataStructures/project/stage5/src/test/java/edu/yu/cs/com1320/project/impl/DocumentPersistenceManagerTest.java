@@ -84,6 +84,7 @@ public class DocumentPersistenceManagerTest {
         URI uri = create("BinaryURI");
         DocumentImpl doc = new DocumentImpl(uri, initialArray);
         this.dpm.serialize(uri, doc);
+        this.dpm.delete(uri);
     }
     @DisplayName("Create a Byte File Then Delete It")
     @Test
@@ -188,9 +189,22 @@ public class DocumentPersistenceManagerTest {
         assertEquals(doc2.getDocumentTxt(), d2.getDocumentTxt());
         assertEquals(doc2.getWordMap(), d2.getWordMap());
     }
-    @DisplayName("Create files to be sent to disk from weird uris")
+    @DisplayName("Create a mailto: Text File Then Deserialize It")
     @Test
     public void testFourteen() throws IOException {
+        String docText = "This is a Document String Text";
+        URI uri = create("mailto:java-net@www.example.com");
+        DocumentImpl doc = new DocumentImpl(uri, docText);
+        this.dpm.serialize(uri, doc);
+        Document d = this.dpm.deserialize(uri);
+        assertEquals(doc, d);
+        assertEquals(doc.getKey(), d.getKey());
+        assertEquals(doc.getDocumentTxt(), d.getDocumentTxt());
+        assertEquals(doc.getWordMap(), d.getWordMap());
+    }
+    @DisplayName("Create files to be sent to disk from weird uris")
+    @Test
+    public void testFifteen() throws IOException {
         String docText = "This is a Document String Text";
         URI uri = create("mailto:java-net@www.example.com");
         DocumentImpl doc = new DocumentImpl(uri, docText);
