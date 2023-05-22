@@ -139,6 +139,16 @@ public class BTreeImpl<Key extends Comparable<Key>, Value> implements edu.yu.cs.
         //if the key already exists in the b-tree, simply replace the value
         BTreeImpl.Entry alreadyThere = this.get(this.root, k, this.height);
         if(alreadyThere != null) {
+            if (alreadyThere.val instanceof File) {
+                Value oldValue;
+                try {
+                    oldValue = this.persistenceManager.deserialize(k);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                alreadyThere.val = v;
+                return oldValue;
+            }
             Value oldValue = (Value) alreadyThere.val;
             alreadyThere.val = v;
             return oldValue;

@@ -121,24 +121,29 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         }
         //Create the new document
         DocumentImpl newStringDoc = new DocumentImpl(uri, text, null);
-        //Update the memory map
-        int documentStorage = newStringDoc.getDocumentTxt().getBytes().length;
-        isDocumentLargerThanMemoryMaximum(documentStorage);
-        this.memoryMap.put(newStringDoc.getKey(), documentStorage);
-        this.memoryStorage = this.memoryStorage + documentStorage;
         //Update the trie
         trieAddition(newStringDoc);
         //Put the new document into the store
         DocumentImpl oldDoc = (DocumentImpl) this.bTree.put(uri, newStringDoc);
         //If there was an old document, delete references to it in memory, document space, trie, and heap
         if(oldDoc != null) {
-            this.documentInventory = this.documentInventory - 1;
+            if (!this.diskURIs.contains(oldDoc.getKey())) {
+                this.documentInventory = this.documentInventory - 1;
+            }
             deleteMemory(oldDoc, true);
             //Delete all mentions of this document from the trie
             trieDeletion(oldDoc);
-            //Remove from heap
-            removeFromHeap(oldDoc);
+            try {
+                //Remove from heap
+                removeFromHeap(oldDoc);
+            }
+            catch (NoSuchElementException e) {
+            }
         }
+        //Update the memory map
+        int documentStorage = newStringDoc.getDocumentTxt().getBytes().length;
+        this.memoryMap.put(newStringDoc.getKey(), documentStorage);
+        this.memoryStorage = this.memoryStorage + documentStorage;
         //Update the last time using the document then put it into the heap
         newStringDoc.setLastUseTime(System.nanoTime());
         this.minHeap.insert(new MinHeapNode(newStringDoc.getKey(), this.bTree));
@@ -193,18 +198,21 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         return oldStringDoc.hashCode();
     }
 
-    private void deleteMemory(DocumentImpl newStringDoc, Boolean sameURI) {
-        if (newStringDoc.getDocumentTxt() == null) {
-            int oldDocumentStorage = newStringDoc.getDocumentBinaryData().length;
+    private void deleteMemory(DocumentImpl oldDocument, Boolean sameURI) {
+        if (this.diskURIs.contains(oldDocument.getKey())) {
+            return;
+        }
+        if (oldDocument.getDocumentTxt() == null) {
+            int oldDocumentStorage = oldDocument.getDocumentBinaryData().length;
             if (!sameURI) {
-                this.memoryMap.remove(newStringDoc.getKey());
+                this.memoryMap.remove(oldDocument.getKey());
             }
             this.memoryStorage = this.memoryStorage - oldDocumentStorage;
         }
         else {
-            int oldDocumentStorage = newStringDoc.getDocumentTxt().getBytes().length;
+            int oldDocumentStorage = oldDocument.getDocumentTxt().getBytes().length;
             if (!sameURI) {
-                this.memoryMap.remove(newStringDoc.getKey());
+                this.memoryMap.remove(oldDocument.getKey());
             }
             this.memoryStorage = this.memoryStorage - oldDocumentStorage;
         }
@@ -246,7 +254,6 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         DocumentImpl newBinaryDoc = new DocumentImpl(uri, bytes);
         //Update the memory map
         int documentStorage = bytes.length;
-        isDocumentLargerThanMemoryMaximum(documentStorage);
         this.memoryMap.put(newBinaryDoc.getKey(), documentStorage);
         this.memoryStorage = this.memoryStorage + documentStorage;
         //Place the new binary document into the table
@@ -271,14 +278,6 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             return replaceBinaryUndo(uri, newBinaryDoc, documentStorage, oldBinaryDoc);
         }
     }
-
-    private void isDocumentLargerThanMemoryMaximum(int documentStorage) {
-        if(this.maxDocumentBytes != null && documentStorage > this.maxDocumentBytes) {
-            this.documentInventory = this.documentInventory - 1;
-            throw new IllegalArgumentException("Can't add a document larger than the memory maximum");
-        }
-    }
-
     private int replaceBinaryUndo(URI uri, DocumentImpl newBinaryDoc, int documentStorage, DocumentImpl oldBinaryDoc) {
         //Add undo function to the stack to put back the old document associated with the URI
         //Update the old binary document's last use time and put it back in the heap
