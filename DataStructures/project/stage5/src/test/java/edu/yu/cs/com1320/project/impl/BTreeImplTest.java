@@ -135,7 +135,7 @@ public class BTreeImplTest {
     public void testNine() throws Exception {
         String docText = "I love Torah and I love Mitzvot";
         URI uri = create("http://www.yu.edu/Wymore/Is/The/Best/Professor/Ever/Document1");
-        DocumentImpl doc = new DocumentImpl(uri, docText);
+        DocumentImpl doc = new DocumentImpl(uri, docText, null);
         BTreeImpl<URI, Document> documentBTree = new BTreeImpl<>();
         documentBTree.put(uri, doc);
         DocumentPersistenceManager dpm = new DocumentPersistenceManager(null);

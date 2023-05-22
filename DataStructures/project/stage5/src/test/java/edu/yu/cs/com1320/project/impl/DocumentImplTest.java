@@ -44,7 +44,7 @@ public class DocumentImplTest {
     @BeforeEach
     public void setUp() throws URISyntaxException {
         this.uriString = create(text);
-        this.document = new DocumentImpl(this.uriString, text);
+        this.document = new DocumentImpl(this.uriString, text, null);
     }
 
     @DisplayName("Get Document Text")
@@ -58,7 +58,7 @@ public class DocumentImplTest {
     public void testTwo() {
         URI newUri = create("Hello!");
         String hello = "Hello!";
-        Document document2 = new DocumentImpl(newUri, hello);
+        Document document2 = new DocumentImpl(newUri, hello, null);
         assertEquals(document2, this.document);
     }
 
@@ -69,7 +69,7 @@ public class DocumentImplTest {
         String hello = null;
         AtomicReference<DocumentImpl> document2 = null;
         assertThrowsExactly(IllegalArgumentException.class, () ->
-                document2.set(new DocumentImpl(newUri, hello)));
+                document2.set(new DocumentImpl(newUri, hello, null)));
     }
 
     @DisplayName("Check That Null Byte Array Returns An Exception")
@@ -99,7 +99,7 @@ public class DocumentImplTest {
         String hello = "";
         AtomicReference<DocumentImpl> document2 = null;
         assertThrowsExactly(IllegalArgumentException.class, () ->
-                document2.set(new DocumentImpl(newUri, hello)));
+                document2.set(new DocumentImpl(newUri, hello, null)));
     }
 
     @DisplayName("Check That Empty URI Returns An Exception")
@@ -109,7 +109,7 @@ public class DocumentImplTest {
         String hello = "meep";
         AtomicReference<DocumentImpl> document2 = null;
         assertThrowsExactly(IllegalArgumentException.class, () ->
-                document2.set(new DocumentImpl(newUri, hello)));
+                document2.set(new DocumentImpl(newUri, hello, null)));
     }
 
     @DisplayName("Get all the Words in a String Document")
@@ -117,7 +117,7 @@ public class DocumentImplTest {
     public void testEight() {
         URI newUri = create("Hello!");
         String hello = "Hello there. My name is Yaacov.";
-        Document document2 = new DocumentImpl(newUri, hello);
+        Document document2 = new DocumentImpl(newUri, hello, null);
         Set<String> words = new HashSet<>();
         words.add("Hello");
         words.add("there");
@@ -133,7 +133,7 @@ public class DocumentImplTest {
     public void testNine() {
         URI newUri = create("Hello!");
         String hello = "How are you! doing today? I am doing quite well, thank you for asking. you you";
-        Document document2 = new DocumentImpl(newUri, hello);
+        Document document2 = new DocumentImpl(newUri, hello, null);
         int count = document2.wordCount("you");
         assertEquals(4, count);
     }
@@ -153,7 +153,7 @@ public class DocumentImplTest {
     public void testEleven() {
         URI newUri = create("Hello!");
         String hello = "How are You! doing today? I am doing quite well, thank you for asking.";
-        Document document2 = new DocumentImpl(newUri, hello);
+        Document document2 = new DocumentImpl(newUri, hello, null);
         int count = document2.wordCount("You");
         assertEquals(1, count);
     }
@@ -163,7 +163,7 @@ public class DocumentImplTest {
     public void testTwelve() {
         URI newUri = create("Hello!");
         String hello = "How are you! doing today? I'm doing quite well, thank you for asking. you you";
-        Document document2 = new DocumentImpl(newUri, hello);
+        Document document2 = new DocumentImpl(newUri, hello, null);
         int count = document2.wordCount("Im");
         assertEquals(1, count);
     }
@@ -172,7 +172,7 @@ public class DocumentImplTest {
     public void testThirteen() {
         URI newUri = create("Hello!");
         String hello = "How are you! doing today? I'm doing quite well, thank you for asking. you you";
-        Document document2 = new DocumentImpl(newUri, hello);
+        Document document2 = new DocumentImpl(newUri, hello, null);
         System.out.println(System.nanoTime());
         System.out.println(System.nanoTime());
     }

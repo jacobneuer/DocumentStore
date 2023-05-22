@@ -52,7 +52,7 @@ public class DocumentPersistenceManagerTest {
     public void testOne() throws IOException {
         String docText = "This is a Document String Text";
         URI uri = create("DocumentURI");
-        DocumentImpl doc = new DocumentImpl(uri, docText);
+        DocumentImpl doc = new DocumentImpl(uri, docText, null);
         this.dpm.serialize(uri, doc);
     }
     @DisplayName("Create a File Then Delete It")
@@ -60,7 +60,7 @@ public class DocumentPersistenceManagerTest {
     public void testTwo() throws IOException {
         String docText = "This is a Document String Text";
         URI uri = create("DocumentURI");
-        DocumentImpl doc = new DocumentImpl(uri, docText);
+        DocumentImpl doc = new DocumentImpl(uri, docText, null);
         this.dpm.serialize(uri, doc);
         this.dpm.delete(uri);
     }
@@ -69,7 +69,7 @@ public class DocumentPersistenceManagerTest {
     public void testThree() throws IOException {
         String docText = "This is a Document String Text";
         URI uri = create("DocumentURI");
-        DocumentImpl doc = new DocumentImpl(uri, docText);
+        DocumentImpl doc = new DocumentImpl(uri, docText, null);
         this.dpm.serialize(uri, doc);
         Document d = this.dpm.deserialize(uri);
         assertEquals(doc, d);
@@ -112,7 +112,7 @@ public class DocumentPersistenceManagerTest {
     public void testSeven() throws IOException {
         String docText = "This is a Document String Text";
         URI uri = create("https://DocumentURI");
-        DocumentImpl doc = new DocumentImpl(uri, docText);
+        DocumentImpl doc = new DocumentImpl(uri, docText, null);
         this.dpm.serialize(uri, doc);
     }
     @DisplayName("Create an http:// File Then Delete It")
@@ -120,7 +120,7 @@ public class DocumentPersistenceManagerTest {
     public void testEight() throws IOException {
         String docText = "This is a Document String Text";
         URI uri = create("http://DocumentURI.com");
-        DocumentImpl doc = new DocumentImpl(uri, docText);
+        DocumentImpl doc = new DocumentImpl(uri, docText, null);
         this.dpm.serialize(uri, doc);
         this.dpm.delete(uri);
     }
@@ -129,7 +129,7 @@ public class DocumentPersistenceManagerTest {
     public void testNine() throws IOException {
         String docText = "This is a Document String Text";
         URI uri = create("http://DocumentURI");
-        DocumentImpl doc = new DocumentImpl(uri, docText);
+        DocumentImpl doc = new DocumentImpl(uri, docText, null);
         this.dpm.serialize(uri, doc);
         Document d = this.dpm.deserialize(uri);
         assertEquals(doc, d);
@@ -142,7 +142,7 @@ public class DocumentPersistenceManagerTest {
     public void testTen() throws IOException {
         String docText = "This is a Document String Text";
         URI uri = create("http://www.yu.edu/documents/doc1");
-        DocumentImpl doc = new DocumentImpl(uri, docText);
+        DocumentImpl doc = new DocumentImpl(uri, docText, null);
         this.dpm.serialize(uri, doc);
     }
     @DisplayName("Create an http:// File Then Delete It")
@@ -150,7 +150,7 @@ public class DocumentPersistenceManagerTest {
     public void testEleven() throws IOException {
         String docText = "This is a Document String Text";
         URI uri = create("http://www.yu.edu/documents/doc1");
-        DocumentImpl doc = new DocumentImpl(uri, docText);
+        DocumentImpl doc = new DocumentImpl(uri, docText, null);
         this.dpm.serialize(uri, doc);
         this.dpm.delete(uri);
     }
@@ -159,7 +159,7 @@ public class DocumentPersistenceManagerTest {
     public void testTwelve() throws IOException {
         String docText = "This is a Document String Text";
         URI uri = create("http://www.yu.edu/documents/doc1");
-        DocumentImpl doc = new DocumentImpl(uri, docText);
+        DocumentImpl doc = new DocumentImpl(uri, docText, null);
         this.dpm.serialize(uri, doc);
         Document d = this.dpm.deserialize(uri);
         assertEquals(doc, d);
@@ -172,11 +172,11 @@ public class DocumentPersistenceManagerTest {
     public void testThirteen() throws IOException {
         String docText = "This is a Document String Text";
         URI uri = create("http://www.yu.edu/documents/doc1");
-        DocumentImpl doc = new DocumentImpl(uri, docText);
+        DocumentImpl doc = new DocumentImpl(uri, docText, null);
         this.dpm.serialize(uri, doc);
         String docText2 = "Professor Wymore is the Best Professor in the World";
         URI uri2 = create("http://www.yu.edu/Wymore/Is/The/Best/Professor/Ever/doc2");
-        DocumentImpl doc2 = new DocumentImpl(uri2, docText2);
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2, null);
         this.dpm.serialize(uri2, doc2);
         Document d = this.dpm.deserialize(uri);
         Document d2 = this.dpm.deserialize(uri2);
@@ -194,7 +194,7 @@ public class DocumentPersistenceManagerTest {
     public void testFourteen() throws IOException {
         String docText = "This is a Document String Text";
         URI uri = create("mailto:java-net@www.example.com");
-        DocumentImpl doc = new DocumentImpl(uri, docText);
+        DocumentImpl doc = new DocumentImpl(uri, docText, null);
         this.dpm.serialize(uri, doc);
         Document d = this.dpm.deserialize(uri);
         assertEquals(doc, d);
@@ -207,7 +207,7 @@ public class DocumentPersistenceManagerTest {
     public void testFifteen() throws IOException {
         String docText = "This is a Document String Text";
         URI uri = create("mailto:java-net@www.example.com");
-        DocumentImpl doc = new DocumentImpl(uri, docText);
+        DocumentImpl doc = new DocumentImpl(uri, docText, null);
         System.out.println("scheme: " + uri.getScheme());
         System.out.println("SSP: " + uri.getSchemeSpecificPart());
         System.out.println("authority: " + uri.getAuthority());

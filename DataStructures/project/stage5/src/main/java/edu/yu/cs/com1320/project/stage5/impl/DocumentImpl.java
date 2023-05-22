@@ -37,25 +37,7 @@ public class DocumentImpl implements Document {
             }
         }
     }
-    public DocumentImpl(URI uri, String txt) {
-        if (uri == null || txt == null || txt.equals("")){
-            throw new IllegalArgumentException("URI or Text is Empty/Null");
-        }
-        this.uri = uri;
-        this.documentText = txt;
-        this.wordMap = new HashMap<>();
-        String noPunctuation = txt.replaceAll("\\p{Punct}", "");
-        String[] words = noPunctuation.split(" ");
-        for(int i = 0; i < words.length; i++) {
-            if(this.wordMap.containsKey(words[i])) {
-                int count = this.wordMap.get(words[i]) + 1;
-                this.wordMap.put(words[i], count);
-            }
-            else {
-                this.wordMap.put(words[i], 1);
-            }
-        }
-    }
+
     public DocumentImpl(URI uri, byte[] binaryData) {
         if (uri == null || binaryData == null || binaryData.length == 0){
             throw new IllegalArgumentException("URI or Binary Data is Null");
