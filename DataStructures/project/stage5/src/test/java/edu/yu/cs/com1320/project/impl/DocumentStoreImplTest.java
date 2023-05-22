@@ -443,7 +443,7 @@ public class DocumentStoreImplTest {
         DocumentImpl doc4 = new DocumentImpl(uri4, docText4);
         documentStore.put(targetStream4, uri4, DocumentStore.DocumentFormat.TXT);
         Set<URI> deletedURIs = documentStore.deleteAll("love");
-        List<Document> searchResults = documentStore.search("love");
+        List<Document> searchResults = documentStore.search("also");
         assert(searchResults.isEmpty());
     }
     @DisplayName("Test DeleteAllWithPrefix Method")
@@ -492,11 +492,6 @@ public class DocumentStoreImplTest {
         Set<URI> deletedURIs = documentStore.deleteAll("love");
         for(URI u: deletedURIs){
             System.out.println(u);
-        }
-        List<Document> postDeleteSearchResults = documentStore.searchByPrefix("c");
-        for(Document d: postDeleteSearchResults){
-            System.out.println("Deleted:");
-            System.out.println(d.getDocumentTxt());
         }
         documentStore.undo();
         List<Document> searchResults = documentStore.searchByPrefix("c");

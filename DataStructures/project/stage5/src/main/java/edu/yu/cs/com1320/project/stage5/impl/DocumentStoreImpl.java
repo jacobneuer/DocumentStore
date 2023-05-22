@@ -734,22 +734,15 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         }
 
         @Override
-        public String toString() {
-            return "MinHeapNode{" +
-                    "uri=" + uri +
-                    '}';
-        }
-
-        @Override
         public boolean equals(Object o) {
             if (this == o) {
                 return true;
             }
-            if (o == null || getClass() != o.getClass()) {
+            if (o == null || this.getClass() != o.getClass()) {
                 return false;
             }
             MinHeapNode that = (MinHeapNode) o;
-            return uri.toString().equals(that.uri.toString());
+            return this.uri.toString().equals(that.uri.toString());
         }
 
         @Override
@@ -757,6 +750,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             if (minHeapNode == null) {
                 throw new NullPointerException("Can't compare a MinHeapNode to a null value");
             }
+            updateLastUseTime();
             minHeapNode.updateLastUseTime();
             if (this.lastUseTime > minHeapNode.getLastUseTime()) {
                 return 1;

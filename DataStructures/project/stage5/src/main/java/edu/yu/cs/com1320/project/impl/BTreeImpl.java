@@ -248,6 +248,9 @@ public class BTreeImpl<Key extends Comparable<Key>, Value> implements edu.yu.cs.
         if (v == null) {
             throw new NoSuchElementException("No Such Document Exists to Move to Disk");
         }
+        if(this.persistenceManager == null) {
+            throw new IllegalStateException("Can't serialize without a Persistence Manager Being Set");
+        }
         this.persistenceManager.serialize(k, v);
 
         String addedFileString = k.toString() + ".json";
