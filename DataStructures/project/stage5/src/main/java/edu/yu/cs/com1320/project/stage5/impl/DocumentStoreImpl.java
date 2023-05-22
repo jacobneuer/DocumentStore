@@ -67,6 +67,11 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         }
     }
     private int putDelete(URI uri) {
+        DocumentImpl preDeletedDoc = (DocumentImpl) this.bTree.get(uri);
+        if (preDeletedDoc != null) {
+            //Delete from the heap
+            removeFromHeap(preDeletedDoc);
+        }
         DocumentImpl deletedDoc = (DocumentImpl) this.bTree.put(uri, null);
         if (deletedDoc != null) {
             this.documentInventory = this.documentInventory - 1;
@@ -79,8 +84,6 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             this.stack.push(undoDelete);
             //Delete all mentions of this document from the trie
             trieDeletion(deletedDoc);
-            //Delete from the heap
-            removeFromHeap(deletedDoc);
             return deletedDoc.hashCode();
         }
         //If there's no old document being returned then we didn't do anything so there's nothing to undo
@@ -127,18 +130,18 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         trieAddition(newStringDoc);
         //Put the new document into the store
         DocumentImpl oldDoc = (DocumentImpl) this.bTree.put(uri, newStringDoc);
-        //Update the last time using the document then put it into the heap
-        newStringDoc.setLastUseTime(System.nanoTime());
-        this.minHeap.insert(new MinHeapNode(newStringDoc.getKey(), this.bTree));
         //If there was an old document, delete references to it in memory, document space, trie, and heap
         if(oldDoc != null) {
             this.documentInventory = this.documentInventory - 1;
             deleteMemory(oldDoc, true);
             //Delete all mentions of this document from the trie
             trieDeletion(oldDoc);
-            //Delete from the heap
+            //Remove from heap
             removeFromHeap(oldDoc);
         }
+        //Update the last time using the document then put it into the heap
+        newStringDoc.setLastUseTime(System.nanoTime());
+        this.minHeap.insert(new MinHeapNode(newStringDoc.getKey(), this.bTree));
         //Update storage/memory
         clearUpDocuments();
         //Create undo situation depending on if it is a new put or a replacement put
@@ -153,6 +156,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
     private int newPutUndo (URI uri, DocumentImpl newStringDoc){
         //Creates an Undo function to delete the new document that was put in the store
         Function<URI, Boolean> deleteFunction = (x) -> {
+            this.documentInventory = this.documentInventory - 1;
             removeFromHeap(newStringDoc);
             this.bTree.put(x, null);
             //Update memory

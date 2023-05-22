@@ -19,7 +19,7 @@ public class MinHeapImpl<E extends Comparable<E>> extends MinHeap<E> {
     @Override
     protected int getArrayIndex(E element) {
         if (element == null){
-            throw new NoSuchElementException("There is no Such Element in the Heap");
+            throw new NoSuchElementException("Element to check is null");
         }
         for (int i = 1; i < elements.length; i++) {
             if(elements[i] == null) {
