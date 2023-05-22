@@ -268,7 +268,7 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
             }
         }
     }
-    public void deleteDSStoreFiles(File directory) {
+    private void deleteDSStoreFiles(File directory) {
         if (!directory.isDirectory()) {
             return;
         }

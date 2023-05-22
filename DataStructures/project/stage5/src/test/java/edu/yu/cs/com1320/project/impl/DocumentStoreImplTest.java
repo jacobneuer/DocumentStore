@@ -894,4 +894,25 @@ public class DocumentStoreImplTest {
         Document test = documentStore.get(uri);
         assertEquals(doc, test);
     }
+    @DisplayName("Replace a Binary Document with the Same URI")
+    @Test
+    public void fortyThree() throws IOException {
+        byte[] initialArray = { 0, 1, 2 };
+        InputStream targetStream = new ByteArrayInputStream(initialArray);
+        URI uri = create("BinaryURI");
+        Document ogDoc = new DocumentImpl(uri, initialArray);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.BINARY);
+        byte[] initialArray2 = { 0, 1, 2, 4, 5 };
+        InputStream targetStream2 = new ByteArrayInputStream(initialArray2);
+        Document doc = new DocumentImpl(uri, initialArray2);
+        documentStore.put(targetStream2, uri, DocumentStore.DocumentFormat.BINARY);
+        Document d = documentStore.get(uri);
+        assertEquals(doc, d);
+        documentStore.undo();
+        Document d2 = documentStore.get(uri);
+        assertEquals(ogDoc, d2);
+        documentStore.setMaxDocumentCount(0);
+        Document d3 = documentStore.get(uri);
+        assertEquals(ogDoc, d3);
+    }
 }
