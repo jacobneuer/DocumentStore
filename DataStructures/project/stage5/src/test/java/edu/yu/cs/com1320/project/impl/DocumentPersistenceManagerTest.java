@@ -218,4 +218,22 @@ public class DocumentPersistenceManagerTest {
         System.out.println("query: " + uri.getQuery());
         System.out.println("fragment: " + uri.getFragment());
     }
+    @DisplayName("Create files to be sent to disk with weird uris")
+    @Test
+    public void testSixteen() throws IOException {
+        String docText = "This is a Document String Text";
+        URI uri = create("meep:yeet/meep/fleep");
+        DocumentImpl doc = new DocumentImpl(uri, docText, null);
+        this.dpm.serialize(uri, doc);
+        this.dpm.deserialize(uri);
+        System.out.println("scheme: " + uri.getScheme());
+        System.out.println("SSP: " + uri.getSchemeSpecificPart());
+        System.out.println("authority: " + uri.getAuthority());
+        System.out.println("user info: " + uri.getUserInfo());
+        System.out.println("host: " + uri.getHost());
+        System.out.println("port: " + uri.getPort());
+        System.out.println("path: " + uri.getPath());
+        System.out.println("query: " + uri.getQuery());
+        System.out.println("fragment: " + uri.getFragment());
+    }
 }

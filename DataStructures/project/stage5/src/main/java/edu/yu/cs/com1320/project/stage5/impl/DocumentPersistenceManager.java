@@ -56,6 +56,7 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
         JsonElement jsonElement = serializer.serialize(val, null, null);
         String fileName = uri.toString() + ".json";
         String directoryPathString = "";
+        boolean removedSchemeYet = false;
         //Remove mailto: to create the file name
         if (fileName.startsWith("mailto:")) {
             fileName = fileName.substring(0, fileName.length() - 5);
@@ -63,14 +64,23 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
             directoryPathString = fileName.substring(fileName.indexOf('@') + 1);
             fileName = fileName.substring(0, fileName.indexOf('@'));
             fileName = fileName + ".json";
+            removedSchemeYet = true;
         }
         //Remove http:// to create the file name
         if (fileName.startsWith("https://")) {
             fileName = fileName.substring(uri.getScheme().length() + 3);
+            removedSchemeYet = true;
         }
         //Remove http:// to create the file name
         if (fileName.startsWith("http://")) {
             fileName = fileName.substring(uri.getScheme().length() + 3);
+            removedSchemeYet = true;
+        }
+        //Else remove the scheme and create subdirectories from there
+        if (!removedSchemeYet) {
+            if (uri.getScheme() != null) {
+                fileName = fileName.substring(uri.getScheme().length() + 1);
+            }
         }
         // Create the path of directories to create
         // If there are a series of directories to create, get the
@@ -112,6 +122,7 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
         }
         String fileName = uri.toString() + ".json";
         String directoryPathString = "";
+        boolean removedSchemeYet = false;
         //Try to find path assuming uri begins with http
         //Remove mailto: to create the file name
         if (fileName.startsWith("mailto:")) {
@@ -120,14 +131,23 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
             directoryPathString = fileName.substring(fileName.indexOf('@') + 1);
             fileName = fileName.substring(0, fileName.indexOf('@'));
             fileName = fileName + ".json";
+            removedSchemeYet = true;
         }
         //Remove http:// to create the file name
         if (fileName.startsWith("https://")) {
             fileName = fileName.substring(uri.getScheme().length() + 3);
+            removedSchemeYet = true;
         }
         //Remove http:// to create the file name
         if (fileName.startsWith("http://")) {
             fileName = fileName.substring(uri.getScheme().length() + 3);
+            removedSchemeYet = true;
+        }
+        //Else remove the scheme and create subdirectories from there
+        if (!removedSchemeYet) {
+            if (uri.getScheme() != null) {
+                fileName = fileName.substring(uri.getScheme().length() + 1);
+            }
         }
         int lastIndex = fileName.lastIndexOf('/');
         if (lastIndex != -1) {
@@ -191,6 +211,7 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
     public boolean delete(URI uri) throws IOException {
         String deletedFile = uri.toString() + ".json";
         String directoryPathString = this.baseDir;
+        boolean removedSchemeYet = false;
         //Remove mailto: to create the file name
         if (deletedFile.startsWith("mailto:")) {
             deletedFile = deletedFile.substring(0, deletedFile.length() - 5);
@@ -198,14 +219,23 @@ public class DocumentPersistenceManager implements PersistenceManager<URI, Docum
             directoryPathString = this.baseDir + "/" + deletedFile.substring(deletedFile.indexOf('@') + 1);
             deletedFile = deletedFile.substring(0, deletedFile.indexOf('@'));
             deletedFile = deletedFile + ".json";
+            removedSchemeYet = true;
         }
         //Remove http:// to create the file name
         if (deletedFile.startsWith("https://")) {
             deletedFile = deletedFile.substring(uri.getScheme().length() + 3);
+            removedSchemeYet = true;
         }
         //Remove http:// to create the file name
         if (deletedFile.startsWith("http://")) {
             deletedFile = deletedFile.substring(uri.getScheme().length() + 3);
+            removedSchemeYet = true;
+        }
+        //Else remove the scheme and create subdirectories from there
+        if (!removedSchemeYet) {
+            if (uri.getScheme() != null) {
+                deletedFile = deletedFile.substring(uri.getScheme().length() + 1);
+            }
         }
         // Create the path of directories to create
         // If there are a series of directories to create, get the
