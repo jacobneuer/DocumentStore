@@ -1019,5 +1019,6 @@ public class DocumentStoreImplTest {
         for (Document d: docs) {
             System.out.println(d.getKey());
         }
+        System.out.println("Meep");
     }
 }
