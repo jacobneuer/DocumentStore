@@ -915,10 +915,10 @@ public class DocumentStoreImplTest {
         Document d3 = documentStore.get(uri);
         assertEquals(ogDoc, d3);
     }
-    @DisplayName("Test Adding Documents After Limit Was Reached")
+    @DisplayName("Test Adding and Deleting Documents After Limit Was Reached")
     @Test
     public void fortyFour() throws IOException {
-        documentStore.setMaxDocumentCount(0);
+        documentStore.setMaxDocumentBytes(0);
         String docText = "I love Torah and I love Mitzvot";
         InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
         URI uri = create("DocumentURI");
@@ -928,14 +928,32 @@ public class DocumentStoreImplTest {
         InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
         URI uri2 = create("DocumentURI2");
         DocumentImpl doc2 = new DocumentImpl(uri2, docText2, null);
-        documentStore.put(targetStream2, uri, DocumentStore.DocumentFormat.TXT);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
         String docText3 = "love love love love";
         InputStream targetStream3 = new ByteArrayInputStream(docText3.getBytes());
         URI uri3 = create("DocumentURI3");
         DocumentImpl doc3 = new DocumentImpl(uri3, docText3, null);
         documentStore.put(targetStream3, uri3, DocumentStore.DocumentFormat.TXT);
+        documentStore.deleteAllWithPrefix("l");
+        Document d = documentStore.get(uri);
+        Document d2 = documentStore.get(uri2);
+        Document d3 = documentStore.get(uri3);
+        assertNull(d);
+        assertNull(d2);
+        assertNull(d3);
+        documentStore.undo(uri2);
+        Document postUndoD2 = documentStore.get(uri2);
+        assertEquals(postUndoD2, doc2);
+        Document postUndoD1 = documentStore.get(uri);
+        assertNull(postUndoD1);
+        documentStore.undo(uri);
+        documentStore.undo(uri3);
+        Document postUndoD3 = documentStore.get(uri3);
+        Document postPostUndoD1 = documentStore.get(uri);
+        assertEquals(postUndoD3, doc3);
+        assertEquals(postPostUndoD1, doc);
     }
-    @DisplayName("Test Adding Documents After Limit Was Reached")
+    @DisplayName("Test Adding and Deleting Documents After Limit Was Reached")
     @Test
     public void fortyFive() throws IOException {
         documentStore.setMaxDocumentCount(0);
@@ -949,5 +967,25 @@ public class DocumentStoreImplTest {
         URI uri2 = create("BinaryURI2");
         Document doc = new DocumentImpl(uri, initialArray2);
         documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.BINARY);
+        documentStore.delete(uri);
+        Document d = documentStore.get(uri);
+        assertNull(d);
+    }
+    @DisplayName("Test That Documents Will be Pushed to Disk Through an Undo if Need Be")
+    @Test
+    public void fortySix() throws IOException {
+        documentStore.setMaxDocumentCount(1);
+        String docText = "I love Torah and I love Mitzvot";
+        InputStream targetStream = new ByteArrayInputStream(docText.getBytes());
+        URI uri = create("DocumentURI");
+        DocumentImpl doc = new DocumentImpl(uri, docText, null);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.TXT);
+        documentStore.deleteAllWithPrefix("love");
+        String docText2 = "I also love cookies and cake";
+        InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
+        URI uri2 = create("DocumentURI2");
+        DocumentImpl doc2 = new DocumentImpl(uri2, docText2, null);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
+        documentStore.undo(uri);
     }
 }

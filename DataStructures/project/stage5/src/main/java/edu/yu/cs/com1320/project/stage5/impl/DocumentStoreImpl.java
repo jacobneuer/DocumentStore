@@ -70,11 +70,18 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         DocumentImpl preDeletedDoc = (DocumentImpl) this.bTree.get(uri);
         if (preDeletedDoc != null) {
             //Delete from the heap
-            removeFromHeap(preDeletedDoc);
+            try {
+                removeFromHeap(preDeletedDoc);
+            }
+            catch (NoSuchElementException e) {
+
+            }
         }
         DocumentImpl deletedDoc = (DocumentImpl) this.bTree.put(uri, null);
         if (deletedDoc != null) {
-            this.documentInventory = this.documentInventory - 1;
+            if (!this.diskURIs.contains(deletedDoc.getKey())) {
+                this.documentInventory = this.documentInventory - 1;
+            }
             //Update the memory map depending on its type of document
             deleteMemory(deletedDoc, false);
             //Add undo function to allow the document being deleted to be put back into the store in the future
@@ -84,6 +91,8 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             this.stack.push(undoDelete);
             //Delete all mentions of this document from the trie
             trieDeletion(deletedDoc);
+            //If the URI was in the disk, remove from list
+            this.diskURIs.remove(deletedDoc.getKey());
             return deletedDoc.hashCode();
         }
         //If there's no old document being returned then we didn't do anything so there's nothing to undo
@@ -162,7 +171,13 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         //Creates an Undo function to delete the new document that was put in the store
         Function<URI, Boolean> deleteFunction = (x) -> {
             this.documentInventory = this.documentInventory - 1;
-            removeFromHeap(newStringDoc);
+            //Delete from the heap
+            try {
+                removeFromHeap(newStringDoc);
+            }
+            catch (NoSuchElementException e) {
+
+            }
             this.bTree.put(x, null);
             //Update memory
             deleteMemory(newStringDoc, false);
@@ -188,7 +203,13 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             trieDeletion(newStringDoc);
             //Delete new document from memory and remove from heap
             deleteMemory(newStringDoc, true);
-            removeFromHeap(newStringDoc);
+            //Delete from the heap
+            try {
+                removeFromHeap(newStringDoc);
+            }
+            catch (NoSuchElementException e) {
+
+            }
             //Update space requirements
             clearUpDocuments();
             return true;
@@ -290,7 +311,13 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         Function<URI, Boolean> replaceFunction = (x) -> {
             this.bTree.put(x, oldBinaryDoc);
             //To undo the new document being deleted, remove it from heap and remove it from memory
-            removeFromHeap(newBinaryDoc);
+            //Delete from the heap
+            try {
+                removeFromHeap(newBinaryDoc);
+            }
+            catch (NoSuchElementException e) {
+
+            }
             this.memoryMap.remove(newBinaryDoc);
             this.memoryStorage = this.memoryStorage - documentStorage;
             //Update the memory of the old document being put back into the store
@@ -313,7 +340,13 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             this.memoryMap.remove(newBinaryDoc);
             this.bTree.put(x, null);
             this.documentInventory = this.documentInventory - 1;
-            removeFromHeap(newBinaryDoc);
+            //Delete from the heap
+            try {
+                removeFromHeap(newBinaryDoc);
+            }
+            catch (NoSuchElementException e) {
+
+            }
             //Update the memory
             this.memoryStorage = this.memoryStorage - documentStorage;
             return true;
@@ -330,7 +363,6 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             this.diskURIs.remove(uri);
             getDocumentImpl = (DocumentImpl) this.bTree.get(uri);
             this.documentInventory = this.documentInventory + 1;
-            trieAddition(getDocumentImpl);
             //Update memory
             addMemoryBack(getDocumentImpl);
             getDocumentImpl.setLastUseTime(System.nanoTime());
@@ -348,40 +380,35 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
 
     @Override
     public boolean delete(URI uri) {
-        //Remove document from the store
-        DocumentImpl deletedDoc = (DocumentImpl) this.bTree.put(uri, null);
-        //If there's no old document being returned then we didn't do anything so there's nothing to undo
-        if (deletedDoc == null) {
-            return false;
-        }
-        this.documentInventory = this.documentInventory - 1;
-        //Update the memory map depending on its type of document
-        deleteMemory(deletedDoc, false);
-        //Delete all mentions of the document from the trie
-        trieDeletion(deletedDoc);
-        //Delete from the heap
-        removeFromHeap(deletedDoc);
-        //Create undo function to allow the document being deleted to be put back into the store in the future
-        deleteUndo(uri, deletedDoc);
-        return true;
-    }
+        DocumentImpl preDeletedDoc = (DocumentImpl) this.bTree.get(uri);
+        if (preDeletedDoc != null) {
+            //Delete from the heap
+            try {
+                removeFromHeap(preDeletedDoc);
+            }
+            catch (NoSuchElementException e) {
 
-    private void deleteUndo(URI uri, DocumentImpl deletedDoc) {
-        //Update the deleted document's last use time and add back into the heap
-        Function<URI, Boolean> putBackFunction = (x) ->
-        {
-            this.bTree.put(x, deletedDoc);
-            this.documentInventory = this.documentInventory + 1;
-            trieAddition(deletedDoc);
-            //Update memory
-            addMemoryBack(deletedDoc);
-            deletedDoc.setLastUseTime(System.nanoTime());
-            this.minHeap.insert(new MinHeapNode(deletedDoc.getKey(), this.bTree));
-            clearUpDocuments();
+            }
+        }
+        DocumentImpl deletedDoc = (DocumentImpl) this.bTree.put(uri, null);
+        if (deletedDoc != null) {
+            if (!this.diskURIs.contains(deletedDoc.getKey())) {
+                this.documentInventory = this.documentInventory - 1;
+            }
+            //Update the memory map depending on its type of document
+            deleteMemory(deletedDoc, false);
+            //Add undo function to allow the document being deleted to be put back into the store in the future
+            //To undo, put the document back in the store and add the words back into the trie
+            Function<URI, Boolean> putBackFunction = undoPutFunction(deletedDoc);
+            GenericCommand<URI> undoDelete = new GenericCommand<>(uri, putBackFunction);
+            this.stack.push(undoDelete);
+            //Delete all mentions of this document from the trie
+            trieDeletion(deletedDoc);
+            //If the URI was in the disk, remove from list
+            this.diskURIs.remove(deletedDoc.getKey());
             return true;
-        };
-        GenericCommand<URI> undoDelete = new GenericCommand<>(uri, putBackFunction);
-        this.stack.push(undoDelete);
+        }
+        return false;
     }
 
     @Override
@@ -544,22 +571,22 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         //and add their words back to the trie
         CommandSet<URI> commandSet = new CommandSet<>();
         for(Document d: deletedDocuments){
-            this.documentInventory = this.documentInventory - 1;
+            if (!this.diskURIs.contains(d.getKey())) {
+                this.documentInventory = this.documentInventory - 1;
+            }
             //Delete all the words in each document that include the given keyword from the trie
             trieDeletion((DocumentImpl) d);
             //Delete from the heap
-            removeFromHeap(d);
+            try {
+                removeFromHeap(d);
+            }
+            catch (NoSuchElementException e) {
+
+            }
             //Update the memory map depending on its type of document
-            if (d.getDocumentTxt() == null) {
-                int documentStorage = d.getDocumentBinaryData().length;
-                this.memoryMap.remove(d);
-                this.memoryStorage = this.memoryStorage - documentStorage;
-            }
-            else {
-                int documentStorage = d.getDocumentTxt().getBytes().length;
-                this.memoryMap.remove(d);
-                this.memoryStorage = this.memoryStorage - documentStorage;
-            }
+            deleteMemory((DocumentImpl) d, false);
+            //If the URI was in the disk, remove from list
+            this.diskURIs.remove(d.getKey());
             //Create undo functions
             Function<URI, Boolean> putBackFunction = createDeleteUndo(d);
             GenericCommand<URI> undoDelete = new GenericCommand<>(d.getKey(), putBackFunction);
@@ -603,22 +630,23 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
 
     private Set<URI> deleteSingleDocument(Set<Document> deletedDocuments, Set<URI> deletedURIs) {
         for(Document d: deletedDocuments) {
-            this.documentInventory = this.documentInventory - 1;
+            if (!this.diskURIs.contains(d.getKey())) {
+                this.documentInventory = this.documentInventory - 1;
+            }
             //Delete all the words in each document that include the given keyword from the trie
             trieDeletion((DocumentImpl) d);
             //Delete from the heap
-            removeFromHeap(d);
+            try {
+                removeFromHeap(d);
+            }
+            catch (NoSuchElementException e) {
+
+            }
             //Update the memory map depending on its type of document
-            if (d.getDocumentTxt() == null) {
-                int documentStorage = d.getDocumentBinaryData().length;
-                this.memoryMap.remove(d);
-                this.memoryStorage = this.memoryStorage - documentStorage;
-            }
-            else {
-                int documentStorage = d.getDocumentTxt().getBytes().length;
-                this.memoryMap.remove(d);
-                this.memoryStorage = this.memoryStorage - documentStorage;
-            }
+            deleteMemory((DocumentImpl) d, false);
+            //If the URI was in the disk, remove from list
+            this.diskURIs.remove(d.getKey());
+            //Create undo function
             Function<URI, Boolean> putBackFunction = createDeleteUndo(d);
             GenericCommand<URI> undoDelete = new GenericCommand<>(d.getKey(), putBackFunction);
             this.stack.push(undoDelete);
