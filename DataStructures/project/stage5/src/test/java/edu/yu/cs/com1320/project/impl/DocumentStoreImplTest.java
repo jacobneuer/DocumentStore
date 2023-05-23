@@ -935,4 +935,19 @@ public class DocumentStoreImplTest {
         DocumentImpl doc3 = new DocumentImpl(uri3, docText3, null);
         documentStore.put(targetStream3, uri3, DocumentStore.DocumentFormat.TXT);
     }
+    @DisplayName("Test Adding Documents After Limit Was Reached")
+    @Test
+    public void fortyFive() throws IOException {
+        documentStore.setMaxDocumentCount(0);
+        byte[] initialArray = { 0, 1, 2 };
+        InputStream targetStream = new ByteArrayInputStream(initialArray);
+        URI uri = create("BinaryURI");
+        Document ogDoc = new DocumentImpl(uri, initialArray);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.BINARY);
+        byte[] initialArray2 = { 0, 1, 2, 4, 5 };
+        InputStream targetStream2 = new ByteArrayInputStream(initialArray2);
+        URI uri2 = create("BinaryURI2");
+        Document doc = new DocumentImpl(uri, initialArray2);
+        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.BINARY);
+    }
 }

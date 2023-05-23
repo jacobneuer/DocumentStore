@@ -252,23 +252,29 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             throw new IOException("Byte Array Input Stream Not Given Correctly");
         }
         DocumentImpl newBinaryDoc = new DocumentImpl(uri, bytes);
+        //Place the new binary document into the table
+        DocumentImpl oldBinaryDoc = (DocumentImpl) this.bTree.put(uri, newBinaryDoc);
+        //If an old binary document is being replaced, delete references to it in memory, document space, and heap
+        if(oldBinaryDoc != null) {
+            if (!this.diskURIs.contains(oldBinaryDoc.getKey())) {
+                this.documentInventory = this.documentInventory - 1;
+            }
+            //Update storage of old binary document
+            deleteMemory(oldBinaryDoc, true);
+            try {
+                //Remove from heap
+                removeFromHeap(oldBinaryDoc);
+            }
+            catch (NoSuchElementException e) {
+            }
+        }
         //Update the memory map
         int documentStorage = bytes.length;
         this.memoryMap.put(newBinaryDoc.getKey(), documentStorage);
         this.memoryStorage = this.memoryStorage + documentStorage;
-        //Place the new binary document into the table
-        DocumentImpl oldBinaryDoc = (DocumentImpl) this.bTree.put(uri, newBinaryDoc);
         //Update the last time using the document and put the new document in heap
         newBinaryDoc.setLastUseTime(System.nanoTime());
         this.minHeap.insert(new MinHeapNode(newBinaryDoc.getKey(), this.bTree));
-        //If an old binary document is being replaced, delete references to it in memory, document space, and heap
-        if(oldBinaryDoc != null) {
-            this.documentInventory = this.documentInventory - 1;
-            //Update storage of old binary document
-            deleteMemory(oldBinaryDoc, true);
-            //Delete from the heap
-            removeFromHeap(oldBinaryDoc);
-        }
         clearUpDocuments();
         //Create undo depending on if this is a new binary document or replacing an old one
         if (oldBinaryDoc == null) {
