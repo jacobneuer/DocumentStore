@@ -494,8 +494,19 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         //Update last time using each of the documents
         long updateTime = System.nanoTime();
         for(Document d: documents) {
-            d.setLastUseTime(updateTime);
-            this.minHeap.reHeapify(new MinHeapNode(d.getKey(), this.bTree));
+            if (this.diskURIs.contains(d.getKey())) {
+                this.diskURIs.remove(d.getKey());
+                DocumentImpl getDocumentImpl = (DocumentImpl) this.bTree.get(d.getKey());
+                this.documentInventory = this.documentInventory + 1;
+                //Update memory
+                addMemoryBack(getDocumentImpl);
+                getDocumentImpl.setLastUseTime(System.nanoTime());
+                this.minHeap.insert(new MinHeapNode(getDocumentImpl.getKey(), this.bTree));
+            }
+            else {
+                d.setLastUseTime(updateTime);
+                this.minHeap.reHeapify(new MinHeapNode(d.getKey(), this.bTree));
+            }
         }
         clearUpDocuments();
         return documents;
@@ -512,8 +523,19 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
         //Update last time using each of the documents
         long updateTime = System.nanoTime();
         for(Document d: documents) {
-            d.setLastUseTime(updateTime);
-            this.minHeap.reHeapify(new MinHeapNode(d.getKey(), this.bTree));
+            if (this.diskURIs.contains(d.getKey())) {
+                this.diskURIs.remove(d.getKey());
+                DocumentImpl getDocumentImpl = (DocumentImpl) this.bTree.get(d.getKey());
+                this.documentInventory = this.documentInventory + 1;
+                //Update memory
+                addMemoryBack(getDocumentImpl);
+                getDocumentImpl.setLastUseTime(System.nanoTime());
+                this.minHeap.insert(new MinHeapNode(getDocumentImpl.getKey(), this.bTree));
+            }
+            else {
+                d.setLastUseTime(updateTime);
+                this.minHeap.reHeapify(new MinHeapNode(d.getKey(), this.bTree));
+            }
         }
         clearUpDocuments();
         return documents;
