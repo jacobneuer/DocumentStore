@@ -1009,18 +1009,28 @@ public class DocumentStoreImplTest {
         InputStream targetStream2 = new ByteArrayInputStream(docText2.getBytes());
         URI uri2 = create("DocumentURI2");
         DocumentImpl doc2 = new DocumentImpl(uri2, docText2, null);
-        documentStore.put(targetStream2, uri2, DocumentStore.DocumentFormat.TXT);
-        String docText3 = "love love love love";
-        InputStream targetStream3 = new ByteArrayInputStream(docText3.getBytes());
-        URI uri3 = create("DocumentURI3");
-        DocumentImpl doc3 = new DocumentImpl(uri3, docText3, null);
-        documentStore.put(targetStream3, uri3, DocumentStore.DocumentFormat.TXT);
-        List<Document> docs = documentStore.searchByPrefix("l");
-        for (Document d: docs) {
-            System.out.println(d.getKey());
-        }
+        documentStore.put(targetStream2, uri, DocumentStore.DocumentFormat.TXT);
+        documentStore.search("love");
         documentStore.undo();
-        Document d = documentStore.get(uri3);
-        assertNull(d);
+        Document d = documentStore.get(uri);
+        assertEquals(d, doc);
+    }
+    @DisplayName("Test Adding and Deleting Documents After Limit Was Reached")
+    @Test
+    public void fortyEight() throws IOException {
+        documentStore.setMaxDocumentCount(0);
+        byte[] initialArray = { 0, 1, 2 };
+        InputStream targetStream = new ByteArrayInputStream(initialArray);
+        URI uri = create("BinaryURI");
+        Document ogDoc = new DocumentImpl(uri, initialArray);
+        documentStore.put(targetStream, uri, DocumentStore.DocumentFormat.BINARY);
+        byte[] initialArray2 = { 0, 1, 2, 4, 5 };
+        InputStream targetStream2 = new ByteArrayInputStream(initialArray2);
+        URI uri2 = create("BinaryURI2");
+        Document doc = new DocumentImpl(uri, initialArray2);
+        documentStore.put(targetStream2, uri, DocumentStore.DocumentFormat.BINARY);
+        documentStore.undo();
+        Document d = documentStore.get(uri);
+        assertEquals(d, ogDoc);
     }
 }

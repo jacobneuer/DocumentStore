@@ -170,7 +170,9 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
     private int newPutUndo (URI uri, DocumentImpl newStringDoc){
         //Creates an Undo function to delete the new document that was put in the store
         Function<URI, Boolean> deleteFunction = (x) -> {
-            this.documentInventory = this.documentInventory - 1;
+            if (!this.diskURIs.contains(newStringDoc.getKey())) {
+                this.documentInventory = this.documentInventory - 1;
+            }
             //Delete from the heap
             try {
                 removeFromHeap(newStringDoc);
@@ -208,6 +210,10 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             trieAddition(oldStringDoc);
             //Update memory to add the old document
             addMemoryBack(oldStringDoc);
+            //If the new document was in the disk, it was brought back so increase number of documents in the store
+            if (this.diskURIs.contains(newStringDoc.getKey())) {
+                this.documentInventory = this.documentInventory + 1;
+            }
             //Add the old document back to the heap
             oldStringDoc.setLastUseTime(System.nanoTime());
             this.minHeap.insert(new MinHeapNode(oldStringDoc.getKey(), this.bTree));
@@ -320,6 +326,10 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
 
             }
             deleteMemory(newBinaryDoc, true);
+            //If the new document was in the disk, it was brought back so increase number of documents in the store
+            if (this.diskURIs.contains(newBinaryDoc.getKey())) {
+                this.documentInventory = this.documentInventory + 1;
+            }
             //Update the memory of the old document being put back into the store
             this.memoryMap.put(oldBinaryDoc.getKey(), oldBinaryDoc.getDocumentBinaryData().length);
             this.memoryStorage = this.memoryStorage + oldBinaryDoc.getDocumentBinaryData().length;
@@ -345,7 +355,9 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
 
             }
             this.bTree.put(x, null);
-            this.documentInventory = this.documentInventory - 1;
+            if (!this.diskURIs.contains(newBinaryDoc.getKey())) {
+                this.documentInventory = this.documentInventory - 1;
+            }
             this.diskURIs.remove(newBinaryDoc.getKey());
             //Update the memory
             deleteMemory(newBinaryDoc, false);
