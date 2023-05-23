@@ -182,6 +182,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             //Update memory
             deleteMemory(newStringDoc, false);
             trieDeletion(newStringDoc);
+            this.diskURIs.remove(newStringDoc.getKey());
             return true;
         };
         GenericCommand<URI> undoNewPut = new GenericCommand<>(uri, deleteFunction);
@@ -190,6 +191,17 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
     }
     private int replacePutUndo (URI uri, DocumentImpl newStringDoc, DocumentImpl oldStringDoc) {
         Function<URI, Boolean> replaceFunction = (x) -> {
+            //Delete new document from the heap
+            try {
+                removeFromHeap(newStringDoc);
+            }
+            catch (NoSuchElementException e) {
+
+            }
+            //Delete new document from trie
+            trieDeletion(newStringDoc);
+            //Delete new document from memory and remove from heap
+            deleteMemory(newStringDoc, true);
             //Put the old document back in the store
             this.bTree.put(x, oldStringDoc);
             //Add it to the trie
@@ -199,17 +211,6 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             //Add the old document back to the heap
             oldStringDoc.setLastUseTime(System.nanoTime());
             this.minHeap.insert(new MinHeapNode(oldStringDoc.getKey(), this.bTree));
-            //Delete new document from trie
-            trieDeletion(newStringDoc);
-            //Delete new document from memory and remove from heap
-            deleteMemory(newStringDoc, true);
-            //Delete from the heap
-            try {
-                removeFromHeap(newStringDoc);
-            }
-            catch (NoSuchElementException e) {
-
-            }
             //Update space requirements
             clearUpDocuments();
             return true;
@@ -318,8 +319,7 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             catch (NoSuchElementException e) {
 
             }
-            this.memoryMap.remove(newBinaryDoc);
-            this.memoryStorage = this.memoryStorage - documentStorage;
+            deleteMemory(newBinaryDoc, true);
             //Update the memory of the old document being put back into the store
             this.memoryMap.put(oldBinaryDoc.getKey(), oldBinaryDoc.getDocumentBinaryData().length);
             this.memoryStorage = this.memoryStorage + oldBinaryDoc.getDocumentBinaryData().length;
@@ -337,9 +337,6 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
     private int newBinaryPutUndo(URI uri, DocumentImpl newBinaryDoc, int documentStorage) {
         //Add undo function to the stack to delete the new document being added to the store
         Function<URI, Boolean> deleteFunction = (x) -> {
-            this.memoryMap.remove(newBinaryDoc);
-            this.bTree.put(x, null);
-            this.documentInventory = this.documentInventory - 1;
             //Delete from the heap
             try {
                 removeFromHeap(newBinaryDoc);
@@ -347,8 +344,11 @@ public class DocumentStoreImpl implements edu.yu.cs.com1320.project.stage5.Docum
             catch (NoSuchElementException e) {
 
             }
+            this.bTree.put(x, null);
+            this.documentInventory = this.documentInventory - 1;
+            this.diskURIs.remove(newBinaryDoc.getKey());
             //Update the memory
-            this.memoryStorage = this.memoryStorage - documentStorage;
+            deleteMemory(newBinaryDoc, false);
             return true;
         };
         GenericCommand<URI> undoNewPut = new GenericCommand<>(uri, deleteFunction);

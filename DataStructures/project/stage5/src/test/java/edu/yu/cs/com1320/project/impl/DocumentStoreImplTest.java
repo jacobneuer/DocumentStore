@@ -1019,6 +1019,8 @@ public class DocumentStoreImplTest {
         for (Document d: docs) {
             System.out.println(d.getKey());
         }
-        System.out.println("Meep");
+        documentStore.undo();
+        Document d = documentStore.get(uri3);
+        assertNull(d);
     }
 }
