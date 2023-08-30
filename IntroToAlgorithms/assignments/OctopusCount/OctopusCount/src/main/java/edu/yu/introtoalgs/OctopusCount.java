@@ -47,8 +47,8 @@ public class OctopusCount implements OctopusCountI {
                 return false;
             }
             Octopus other = (Octopus) obj;
-            Object[][] octopusOne = combineArrays(this.armTextures, this.armColors, convertIntegerArray(this.lengthOfArmsInCM));
-            Object[][] octopusTwo = combineArrays(other.armTextures, other.armColors, convertIntegerArray(other.lengthOfArmsInCM));
+            Object[][] octopusOne = combineArrays(this.armTextures, this.armColors, boxIntegerArray(this.lengthOfArmsInCM));
+            Object[][] octopusTwo = combineArrays(other.armTextures, other.armColors, boxIntegerArray(other.lengthOfArmsInCM));
             Set<String> armsOne = new HashSet<>();
             Set<String> armsTwo = new HashSet<>();
             for (int i = 0; i < 8; i++) {
@@ -68,7 +68,7 @@ public class OctopusCount implements OctopusCountI {
     }
 
 
-    public Integer[] convertIntegerArray(int[] lengthInCM) {
+    public Integer[] boxIntegerArray(int[] lengthInCM) {
         Integer[] integerArray = new Integer[8];
         for (int i = 0; i < 8; i++) {
             if (lengthInCM[i] < 0) {

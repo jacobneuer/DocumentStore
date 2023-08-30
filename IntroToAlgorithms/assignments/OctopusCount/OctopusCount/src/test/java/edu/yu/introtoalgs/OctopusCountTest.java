@@ -36,4 +36,64 @@ public class OctopusCountTest {
         assertEquals(1, oc.countThem());
     }
 
+    @DisplayName("Test Trivial Inequality of Octopuses")
+    @Test
+    public void testTwo() {
+        OctopusCount oc = new OctopusCount();
+        OctopusCountI.ArmTexture[] armTextures = {SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH};
+        OctopusCountI.ArmColor[] armColors = {GRAY, GRAY, GRAY, GRAY, GRAY, GRAY, GRAY, GRAY};
+        int[] armLengths = {1, 1, 1, 1, 1, 1, 1, 1};
+        int[] armLengths2 = {2, 1, 1, 1, 1, 1, 1, 1};
+        oc.addObservation(1, armColors, armLengths, armTextures);
+        oc.addObservation(2, armColors, armLengths2, armTextures);
+        assertEquals(2, oc.countThem());
+    }
+
+    @DisplayName("Test Complicated Equality of Octopuses")
+    @Test
+    public void testThree() {
+        OctopusCount oc = new OctopusCount();
+        OctopusCountI.ArmTexture[] armTextures = {STICKY, SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH};
+        OctopusCountI.ArmColor[] armColors = {GRAY, GRAY, GRAY, GRAY, GRAY, GRAY, GRAY, GRAY};
+        int[] armLengths = {1, 1, 1, 1, 1, 1, 1, 1};
+        OctopusCountI.ArmTexture[] armTextures2 = {SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH, STICKY, SMOOTH, SMOOTH};
+        OctopusCountI.ArmColor[] armColors2 = {GRAY, GRAY, GRAY, GRAY, GRAY, GRAY, GRAY, GRAY};
+        int[] armLengths2 = {1, 1, 1, 1, 1, 1, 1, 1};
+        oc.addObservation(1, armColors, armLengths, armTextures);
+        oc.addObservation(2, armColors2, armLengths2, armTextures2);
+        assertEquals(1, oc.countThem());
+    }
+
+    @DisplayName("Test Complicated Equality of Octopuses")
+    @Test
+    public void testFour() {
+        OctopusCount oc = new OctopusCount();
+        OctopusCountI.ArmTexture[] armTextures = {STICKY, SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH};
+        OctopusCountI.ArmColor[] armColors = {GRAY, GRAY, GRAY, GRAY, GRAY, GRAY, GRAY, RED};
+        int[] armLengths = {6, 1, 1, 1, 1, 1, 1, 7};
+        OctopusCountI.ArmTexture[] armTextures2 = {SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH, STICKY, SMOOTH, SMOOTH};
+        OctopusCountI.ArmColor[] armColors2 = {GRAY, RED, GRAY, GRAY, GRAY, GRAY, GRAY, GRAY};
+        int[] armLengths2 = {1, 7, 1, 1, 1, 6, 1, 1};
+        oc.addObservation(1, armColors, armLengths, armTextures);
+        oc.addObservation(2, armColors2, armLengths2, armTextures2);
+        assertEquals(1, oc.countThem());
+    }
+
+    @DisplayName("Test Complicated Equality of Octopuses Multiple Times")
+    @Test
+    public void testFive() {
+        OctopusCount oc = new OctopusCount();
+        for (int i = 0; i <1000000; i++) {
+            OctopusCountI.ArmTexture[] armTextures = {STICKY, SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH};
+            OctopusCountI.ArmColor[] armColors = {GRAY, GRAY, GRAY, GRAY, GRAY, GRAY, GRAY, RED};
+            int[] armLengths = {6, 1, 1, 1, 1, 1, 1, 2};
+            OctopusCountI.ArmTexture[] armTextures2 = {SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH, STICKY, SMOOTH, SMOOTH};
+            OctopusCountI.ArmColor[] armColors2 = {GRAY, RED, GRAY, GRAY, GRAY, GRAY, GRAY, GRAY};
+            int[] armLengths2 = {1, 2, 1, 1, 1, 6, 1, 1};
+            oc.addObservation(1, armColors, armLengths, armTextures);
+            oc.addObservation(2, armColors2, armLengths2, armTextures2);
+        }
+        assertEquals(1, oc.countThem());
+    }
+
 }
