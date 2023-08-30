@@ -12,11 +12,27 @@ public class OctopusCount implements OctopusCountI {
         int[] lengthOfArmsInCM;
         ArmTexture[] armTextures;
 
+        int redArms;
+        int slimyArms;
+
         public Octopus(int observationId, ArmColor[] colors, int[] lengthInCM, ArmTexture[] textures) {
             this.observationId = observationId;
             this.armColors = colors;
             this.lengthOfArmsInCM = lengthInCM;
             this.armTextures = textures;
+            for (int i = 0; i < 8; i++) {
+                if (armColors[i].equals(ArmColor.RED)) {
+                    redArms++;
+                }
+                if (armTextures[i].equals(ArmTexture.SLIMY)) {
+                    slimyArms++;
+                }
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return 17 * (redArms + slimyArms);
         }
 
         @Override
@@ -31,61 +47,44 @@ public class OctopusCount implements OctopusCountI {
                 return false;
             }
             Octopus other = (Octopus) obj;
-            if (!equalArmTextures(this.armTextures, other.armTextures)) {
+            Object[][] octopusOne = combineArrays(this.armTextures, this.armColors, convertIntegerArray(this.lengthOfArmsInCM));
+            Object[][] octopusTwo = combineArrays(other.armTextures, other.armColors, convertIntegerArray(other.lengthOfArmsInCM));
+            Set<String> armsOne = new HashSet<>();
+            Set<String> armsTwo = new HashSet<>();
+            for (int i = 0; i < 8; i++) {
+                String octopusOneArm = octopusOne[0][i].toString() + octopusOne[1][i].toString() + octopusOne[2][i].toString();
+                String octopusTwoArm = octopusTwo[0][i].toString() + octopusTwo[1][i].toString() + octopusTwo[2][i].toString();
+                armsOne.add(octopusOneArm);
+                armsTwo.add(octopusTwoArm);
+            }
+            if (armsOne.size() != armsTwo.size()) {
                 return false;
             }
-            if (!equalArmLengths(this.lengthOfArmsInCM, other.lengthOfArmsInCM)) {
-                return false;
-            }
-            if (!equalArmColors(this.armColors, other.armColors)) {
-                return false;
-            }
-            return true;
-        }
-    }
-    public boolean equalArmLengths(int[] octopusOneArmLengths, int[] octopusTwoArmLengths) {
-        for (int i = 0; i < 8; i++) {
-            int k;
-            for (k = 0; k < 8; k++) {
-                if (octopusOneArmLengths[(i + k) % 8] != octopusTwoArmLengths[k]) {
-                    break;
-                }
-            }
-            if (k == 8) {
-                return true;
+            else {
+                armsOne.addAll(armsTwo);
+                return armsOne.size() == armsTwo.size();
             }
         }
-        return false;
     }
 
-    public boolean equalArmColors(ArmColor[] octopusOneArmColors, ArmColor[] octopusTwoArmColors) {
+
+    public Integer[] convertIntegerArray(int[] lengthInCM) {
+        Integer[] integerArray = new Integer[8];
         for (int i = 0; i < 8; i++) {
-            int k;
-            for (k = 0; k < 8; k++) {
-                if (!octopusOneArmColors[(i + k) % 8].equals(octopusTwoArmColors[k])) {
-                    break;
-                }
+            if (lengthInCM[i] < 0) {
+                throw new IllegalArgumentException("You can't have an arm with a negative length value");
             }
-            if (k == 8) {
-                return true;
-            }
+            integerArray[i] = lengthInCM[i];
         }
-        return false;
+        return integerArray;
     }
 
-    public boolean equalArmTextures(ArmTexture[] octopusOneArmTextures, ArmTexture[] octopusTwoArmTextures) {
-        for (int i = 0; i < 8; i++) {
-            int k;
-            for (k = 0; k < 8; k++) {
-                if (!octopusOneArmTextures[(i + k) % 8].equals(octopusTwoArmTextures[k])) {
-                    break;
-                }
-            }
-            if (k == 8) {
-                return true;
-            }
-        }
-        return false;
+    public Object[][] combineArrays(Object[] array1, Object[] array2, Object[] array3) {
+        Object[][] combinedArray = new Object[3][];
+        combinedArray[0] = array1;
+        combinedArray[1] = array2;
+        combinedArray[2] = array3;
+        return combinedArray;
     }
 
     @Override
@@ -98,11 +97,6 @@ public class OctopusCount implements OctopusCountI {
         }
         if (colors.length != 8 || lengthInCM.length != 8 || textures.length != 8) {
             throw new IllegalArgumentException("All octopuses have eight legs. The data must reflect that.");
-        }
-        for (int i = 0; i < 8; i++) {
-            if (lengthInCM[i] < 0) {
-                throw new IllegalArgumentException("You can't have an arm with a negative length value");
-            }
         }
         octopuses.add(new Octopus(observationId, colors, lengthInCM, textures));
     }
