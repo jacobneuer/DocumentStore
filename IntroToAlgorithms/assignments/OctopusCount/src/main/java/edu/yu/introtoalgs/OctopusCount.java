@@ -29,10 +29,12 @@ public class OctopusCount implements OctopusCountI {
             this.armTextures = textures;
             this.octopusArms = new String[8];
             for (int i = 0; i < 8; i++) {
+                if (lengthInCM[i] < 0) {
+                    throw new IllegalArgumentException("Length of Arm Can't be Less Than Zero");
+                }
                 StringBuilder builder = new StringBuilder();
                 builder.append(armTextures[i].toString()).append(armColors[i].toString()).append(lengthOfArmsInCM[i]);
-                String arm = builder.toString();
-                this.octopusArms[i] = arm;
+                this.octopusArms[i] = builder.toString();
 
                 if (armColors[i].equals(ArmColor.RED)) {
                     this.redArms++;
