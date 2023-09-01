@@ -14,25 +14,29 @@ public class OctopusCount implements OctopusCountI {
 
         int redArms;
         int slimyArms;
+        Set<String> octopusArms;
 
         public Octopus(int observationId, ArmColor[] colors, int[] lengthInCM, ArmTexture[] textures) {
             this.observationId = observationId;
             this.armColors = colors;
             this.lengthOfArmsInCM = lengthInCM;
             this.armTextures = textures;
+            this.octopusArms = new HashSet<>();
             for (int i = 0; i < 8; i++) {
+                String arm = armTextures[i].toString() + armColors[i].toString() + lengthOfArmsInCM[i];
+                this.octopusArms.add(arm);
                 if (armColors[i].equals(ArmColor.RED)) {
-                    redArms++;
+                    this.redArms++;
                 }
                 if (armTextures[i].equals(ArmTexture.SLIMY)) {
-                    slimyArms++;
+                    this.slimyArms++;
                 }
             }
         }
 
         @Override
         public int hashCode() {
-            return 17 * (redArms + slimyArms);
+            return 17 * (this.redArms + this.slimyArms);
         }
 
         @Override
@@ -47,44 +51,14 @@ public class OctopusCount implements OctopusCountI {
                 return false;
             }
             Octopus other = (Octopus) obj;
-            Object[][] octopusOne = combineArrays(this.armTextures, this.armColors, boxIntegerArray(this.lengthOfArmsInCM));
-            Object[][] octopusTwo = combineArrays(other.armTextures, other.armColors, boxIntegerArray(other.lengthOfArmsInCM));
-            Set<String> armsOne = new HashSet<>();
-            Set<String> armsTwo = new HashSet<>();
-            for (int i = 0; i < 8; i++) {
-                String octopusOneArm = octopusOne[0][i].toString() + octopusOne[1][i].toString() + octopusOne[2][i].toString();
-                String octopusTwoArm = octopusTwo[0][i].toString() + octopusTwo[1][i].toString() + octopusTwo[2][i].toString();
-                armsOne.add(octopusOneArm);
-                armsTwo.add(octopusTwoArm);
-            }
-            if (armsOne.size() != armsTwo.size()) {
+            if (this.octopusArms.size() != other.octopusArms.size()) {
                 return false;
             }
             else {
-                armsOne.addAll(armsTwo);
-                return armsOne.size() == armsTwo.size();
+                Set<String> combinedArms = new HashSet<>(this.octopusArms);
+                return !combinedArms.addAll(other.octopusArms);
             }
         }
-    }
-
-
-    public Integer[] boxIntegerArray(int[] lengthInCM) {
-        Integer[] integerArray = new Integer[8];
-        for (int i = 0; i < 8; i++) {
-            if (lengthInCM[i] < 0) {
-                throw new IllegalArgumentException("You can't have an arm with a negative length value");
-            }
-            integerArray[i] = lengthInCM[i];
-        }
-        return integerArray;
-    }
-
-    public Object[][] combineArrays(Object[] array1, Object[] array2, Object[] array3) {
-        Object[][] combinedArray = new Object[3][];
-        combinedArray[0] = array1;
-        combinedArray[1] = array2;
-        combinedArray[2] = array3;
-        return combinedArray;
     }
 
     @Override

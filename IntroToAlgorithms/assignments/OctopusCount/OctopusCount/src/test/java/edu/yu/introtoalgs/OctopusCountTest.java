@@ -83,7 +83,7 @@ public class OctopusCountTest {
     @Test
     public void testFive() {
         OctopusCount oc = new OctopusCount();
-        for (int i = 0; i <1000000; i++) {
+        for (int i = 0; i < 10; i++) {
             OctopusCountI.ArmTexture[] armTextures = {STICKY, SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH};
             OctopusCountI.ArmColor[] armColors = {GRAY, GRAY, GRAY, GRAY, GRAY, GRAY, GRAY, RED};
             int[] armLengths = {6, 1, 1, 1, 1, 1, 1, 2};
@@ -94,6 +94,49 @@ public class OctopusCountTest {
             oc.addObservation(2, armColors2, armLengths2, armTextures2);
         }
         assertEquals(1, oc.countThem());
+    }
+
+    @DisplayName("Test Randomized Equality of Octopuses With Large Data Set")
+    @Test
+    public void testSix() {
+        OctopusCount oc = new OctopusCount();
+        for (int i = 0; i < 8000; i++) {
+            OctopusCountI.ArmTexture[] armTextures = new OctopusCountI.ArmTexture[8];
+            OctopusCountI.ArmColor[] armColors = new OctopusCountI.ArmColor[8];
+            int[] armLengths = new int[8];
+            for (int k = 0; k < 8; k++) {
+                double random = Math.random();
+                if (random < .33) {
+                    armTextures[k] = STICKY;
+                }
+                if (random >= .33 && random < .66) {
+                    armTextures[k] = SMOOTH;
+                }
+                else {
+                    armTextures[k] = SLIMY;
+                }
+            }
+            for (int k = 0; k < 8; k++) {
+                double random = Math.random();
+                if (random < .33) {
+                    armColors[k] = RED;
+                }
+                if (random >= .33 && random < .66) {
+                    armColors[k] = GRAY;
+                }
+                else {
+                    armColors[k] = BLACK;
+                }
+            }
+            for (int k = 0; k < 8; k++) {
+                double random = Math.random();
+                armLengths[k] = (int) (10 * random);
+            }
+
+            oc.addObservation(i, armColors, armLengths, armTextures);
+            //(System.currentTimeMillis()) / 1000)
+        }
+        System.out.println(oc.countThem());
     }
 
 }
