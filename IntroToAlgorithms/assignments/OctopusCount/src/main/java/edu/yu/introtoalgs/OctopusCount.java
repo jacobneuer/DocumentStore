@@ -21,6 +21,7 @@ public class OctopusCount implements OctopusCountI {
         int smoothArms;
 
         String[] octopusArms;
+        int armsHashcode;
 
         public Octopus(int observationId, ArmColor[] colors, int[] lengthInCM, ArmTexture[] textures) {
             this.observationId = observationId;
@@ -29,6 +30,12 @@ public class OctopusCount implements OctopusCountI {
             this.armTextures = textures;
             this.octopusArms = new String[8];
             for (int i = 0; i < 8; i++) {
+                if (armColors[i] == null) {
+                    throw new IllegalArgumentException("Color Can't be Null");
+                }
+                if (armTextures[i] == null) {
+                    throw new IllegalArgumentException("Arm Texture Can't be Null");
+                }
                 if (lengthInCM[i] < 0) {
                     throw new IllegalArgumentException("Length of Arm Can't be Less Than Zero");
                 }
@@ -56,6 +63,7 @@ public class OctopusCount implements OctopusCountI {
                 }
             }
             Arrays.sort(this.octopusArms);
+            this.armsHashcode = Arrays.hashCode(this.octopusArms);
         }
 
         @Override
@@ -77,7 +85,7 @@ public class OctopusCount implements OctopusCountI {
                 return false;
             }
             Octopus other = (Octopus) obj;
-            return Arrays.equals(this.octopusArms, other.octopusArms);
+            return this.armsHashcode == other.armsHashcode;
         }
     }
 
