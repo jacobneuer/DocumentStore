@@ -12,14 +12,6 @@ public class OctopusCount implements OctopusCountI {
         int[] lengthOfArmsInCM;
         ArmTexture[] armTextures;
 
-        int redArms;
-        int blackArms;
-        int grayArms;
-
-        int slimyArms;
-        int stickyArms;
-        int smoothArms;
-
         String[] octopusArms;
         int armsHashcode;
 
@@ -43,25 +35,6 @@ public class OctopusCount implements OctopusCountI {
                 StringBuilder builder = new StringBuilder();
                 builder.append(armTextures[i].toString()).append(armColors[i].toString()).append(lengthOfArmsInCM[i]);
                 this.octopusArms[i] = builder.toString();
-
-                if (armColors[i].equals(ArmColor.RED)) {
-                    this.redArms++;
-                }
-                else if (armColors[i].equals(ArmColor.BLACK)) {
-                    this.blackArms++;
-                }
-                else {
-                    this.grayArms++;
-                }
-                if (armTextures[i].equals(ArmTexture.SLIMY)) {
-                    this.slimyArms++;
-                }
-                else if (armTextures[i].equals(ArmTexture.STICKY)) {
-                    this.stickyArms++;
-                }
-                else {
-                    this.smoothArms++;
-                }
             }
             Arrays.sort(this.octopusArms);
             this.armsHashcode = Arrays.hashCode(this.octopusArms);
