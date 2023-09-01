@@ -100,7 +100,7 @@ public class OctopusCountTest {
     @Test
     public void testSix() {
         OctopusCount oc = new OctopusCount();
-        for (int i = 0; i < 128000; i++) {
+        for (int i = 0; i < 1000000; i++) {
             OctopusCountI.ArmTexture[] armTextures = new OctopusCountI.ArmTexture[8];
             OctopusCountI.ArmColor[] armColors = new OctopusCountI.ArmColor[8];
             int[] armLengths = new int[8];

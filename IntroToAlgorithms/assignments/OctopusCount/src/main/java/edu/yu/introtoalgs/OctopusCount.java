@@ -39,6 +39,7 @@ public class OctopusCount implements OctopusCountI {
                 if (lengthInCM[i] < 0) {
                     throw new IllegalArgumentException("Length of Arm Can't be Less Than Zero");
                 }
+
                 StringBuilder builder = new StringBuilder();
                 builder.append(armTextures[i].toString()).append(armColors[i].toString()).append(lengthOfArmsInCM[i]);
                 this.octopusArms[i] = builder.toString();
@@ -68,9 +69,7 @@ public class OctopusCount implements OctopusCountI {
 
         @Override
         public int hashCode() {
-            int value = 17 * (this.redArms + this.slimyArms + this.blackArms);
-            value = value  * (this.blackArms + this.stickyArms);
-            return value + this.smoothArms;
+            return this.armsHashcode;
         }
 
         @Override
