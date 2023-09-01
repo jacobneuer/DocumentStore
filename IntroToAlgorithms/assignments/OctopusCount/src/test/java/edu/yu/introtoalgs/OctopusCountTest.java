@@ -100,7 +100,7 @@ public class OctopusCountTest {
     @Test
     public void testSix() {
         OctopusCount oc = new OctopusCount();
-        for (int i = 0; i < 8000; i++) {
+        for (int i = 0; i < 32000; i++) {
             OctopusCountI.ArmTexture[] armTextures = new OctopusCountI.ArmTexture[8];
             OctopusCountI.ArmColor[] armColors = new OctopusCountI.ArmColor[8];
             int[] armLengths = new int[8];
@@ -137,6 +137,33 @@ public class OctopusCountTest {
             //(System.currentTimeMillis()) / 1000)
         }
         System.out.println(oc.countThem());
+    }
+
+    @DisplayName("Test Timing")
+    @Test
+    public void testSeven() {
+        for (int i = 0; i < 1000000; i++) {
+            double random = Math.random();
+            int randomInt = (int) (10 * random);
+            double random2 = Math.random();
+            int randomInt2 = (int) (10 * random);
+            boolean bigger = randomInt > randomInt2;
+        }
+    }
+
+    @DisplayName("Test Complicated Inequality of Octopuses")
+    @Test
+    public void testEight() {
+        OctopusCount oc = new OctopusCount();
+        OctopusCountI.ArmTexture[] armTextures = {SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH, SMOOTH, STICKY};
+        OctopusCountI.ArmColor[] armColors = {GRAY, GRAY, GRAY, GRAY, GRAY, GRAY, GRAY, GRAY};
+        int[] armLengths = {1, 1, 1, 1, 1, 1, 1, 1};
+        OctopusCountI.ArmTexture[] armTextures2 = {SMOOTH, STICKY, STICKY, STICKY, STICKY, STICKY, STICKY, STICKY};
+        OctopusCountI.ArmColor[] armColors2 = {GRAY, GRAY, GRAY, GRAY, GRAY, GRAY, GRAY, GRAY};
+        int[] armLengths2 = {1, 1, 1, 1, 1, 1, 1, 1};
+        oc.addObservation(1, armColors, armLengths, armTextures);
+        oc.addObservation(2, armColors2, armLengths2, armTextures2);
+        assertEquals(2, oc.countThem());
     }
 
 }

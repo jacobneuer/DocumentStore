@@ -13,30 +13,54 @@ public class OctopusCount implements OctopusCountI {
         ArmTexture[] armTextures;
 
         int redArms;
+        int blackArms;
+        int grayArms;
+
         int slimyArms;
-        Set<String> octopusArms;
+        int stickyArms;
+        int smoothArms;
+
+        String[] octopusArms;
 
         public Octopus(int observationId, ArmColor[] colors, int[] lengthInCM, ArmTexture[] textures) {
             this.observationId = observationId;
             this.armColors = colors;
             this.lengthOfArmsInCM = lengthInCM;
             this.armTextures = textures;
-            this.octopusArms = new HashSet<>();
+            this.octopusArms = new String[8];
             for (int i = 0; i < 8; i++) {
-                String arm = armTextures[i].toString() + armColors[i].toString() + lengthOfArmsInCM[i];
-                this.octopusArms.add(arm);
+                StringBuilder builder = new StringBuilder();
+                builder.append(armTextures[i].toString()).append(armColors[i].toString()).append(lengthOfArmsInCM[i]);
+                String arm = builder.toString();
+                this.octopusArms[i] = arm;
+
                 if (armColors[i].equals(ArmColor.RED)) {
                     this.redArms++;
+                }
+                else if (armColors[i].equals(ArmColor.BLACK)) {
+                    this.blackArms++;
+                }
+                else {
+                    this.grayArms++;
                 }
                 if (armTextures[i].equals(ArmTexture.SLIMY)) {
                     this.slimyArms++;
                 }
+                else if (armTextures[i].equals(ArmTexture.STICKY)) {
+                    this.stickyArms++;
+                }
+                else {
+                    this.smoothArms++;
+                }
             }
+            Arrays.sort(this.octopusArms);
         }
 
         @Override
         public int hashCode() {
-            return 17 * (this.redArms + this.slimyArms);
+            int value = 17 * (this.redArms + this.slimyArms + this.blackArms);
+            value = value  * (this.blackArms + this.stickyArms);
+            return value + this.smoothArms;
         }
 
         @Override
@@ -51,13 +75,7 @@ public class OctopusCount implements OctopusCountI {
                 return false;
             }
             Octopus other = (Octopus) obj;
-            if (this.octopusArms.size() != other.octopusArms.size()) {
-                return false;
-            }
-            else {
-                Set<String> combinedArms = new HashSet<>(this.octopusArms);
-                return !combinedArms.addAll(other.octopusArms);
-            }
+            return Arrays.equals(this.octopusArms, other.octopusArms);
         }
     }
 
