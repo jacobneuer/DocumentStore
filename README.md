@@ -1,4 +1,4 @@
-<h1><a id = "TOP" href = https://github.com/YaakovBaker/Document-Storage-System><Strong>Document Storage System</Strong></a></h1>
+<h1><a id = "TOP" href = <Strong>Document Storage System</Strong></a></h1>
 
 <h3>How To Use</h3>
 <p>The links in the table of contents link to sections below, except for the LinkedIn link, and the sections below link to the actual java files in the repository.
