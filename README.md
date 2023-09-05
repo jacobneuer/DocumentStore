@@ -6,7 +6,7 @@ The readMe gives overviews, in depth or general, of the different parts of the s
 
 <h3><a id = "TOC">Table of Contents</a></h3>
 <ul>
-  <li><a href = "https://www.linkedin.com/in/yaakovbaker01/">Link to visit my LinkedIn</a></li>
+  <li><a href = "https://www.linkedin.com/in/jacob-neuer-671a081a8/">Link to visit my LinkedIn</a></li>
   <li><a href = "#Summary">Summary</a></li>
   <li><a href = "#DS">Data Structures</a></li>
     <p>
