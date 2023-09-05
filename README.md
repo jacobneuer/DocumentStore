@@ -159,5 +159,5 @@ The readMe gives overviews, in depth or general, of the different parts of the s
   
  <p>
 <a href ="#TOP">Back To Top</a><br>
-<a href = "https://www.linkedin.com/in/yaakovbaker01/">LinkedIn</a>
+<a href = "https://www.linkedin.com/in/jacob-neuer-671a081a8/">LinkedIn</a>
  </p>
