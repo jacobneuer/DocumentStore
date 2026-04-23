@@ -1,5 +1,79 @@
-<h1> <Strong>Document Storage System</Strong></h1>
+# Document Store
 
-  <li><a href = "https://www.linkedin.com/in/jacob-neuer-671a081a8/">Link to visit my LinkedIn</a></li>
-  
-  <p><br>•	Built a Document Storage System with Java in Data Structures. It utilized various Data Structures we learned about in that course: Trie (searching), Stack (undo actions), Heap (last use time of a document), BTree (storage). The stored documents are instances of the <i>Document</i> and <i>DocumentImpl</i> classes and can be either text documents or documents of binary data. The <i>DocumentImpl</i> has multiple methods for returning specific and important information of the document like its wordCounts, the data stored, and the last time it was used. The <i>DocumentPersistenceManager</i> class manipulates the state of these Documents by either serializing documents to the disk or deserializing them to bring them back to memory, and even deleting them when a deleteMethod is called. This is utilized by the Btree to manage its space in memory so that if the number of documents exceed a set limit, then instead of storing the document it will store a refrence to it on disk. Documents can be brought to memory when they are searched for by the Trie since their last use time will get updated and other documents can then be placed on disk to make space for this searched document.<br></p>
+A Java document storage system built incrementally across five milestones, evolving from a basic in-memory store into a persistent search engine with undo support, memory limits, and disk-backed storage.
+
+## Overview
+
+The project stores both text and binary documents and exposes a `DocumentStore` abstraction that grows in capability over time. As the implementation matures, it adds richer indexing, better mutation control, memory-aware eviction, and persistence to disk.
+
+Core ideas in the final version:
+
+- hash-table backed document lookup
+- undoable commands with stack-based history
+- trie-based keyword and prefix search
+- min-heap based least-recently-used eviction
+- B-tree backed persistence and on-disk document storage
+
+## Repository Layout
+
+```text
+DocumentStore/
+├── document-store-evolution/
+│   ├── hash-table-store/
+│   ├── undoable-store/
+│   ├── searchable-store/
+│   ├── memory-managed-store/
+│   └── persistent-document-store/
+└── DataStructures/
+    └── se-practice/
+```
+
+The main work is in `document-store-evolution`. The `DataStructures/se-practice` folder is leftover course material and is not part of the main Document Store implementation.
+
+## Milestone Progression
+
+- `hash-table-store`: introduces the base `Document` and `DocumentStore` model with hash-table backed storage.
+- `undoable-store`: adds command-based undo support using a stack.
+- `searchable-store`: adds trie-backed keyword and prefix search.
+- `memory-managed-store`: adds memory limits and least-recently-used eviction with a min-heap.
+- `persistent-document-store`: adds persistence to disk using a B-tree and a `DocumentPersistenceManager`.
+
+## Data Structures Used
+
+- `HashTable`: primary lookup by document key
+- `Stack`: undo history
+- `Trie`: full-word and prefix-based search
+- `MinHeap`: eviction based on last use time
+- `BTree`: storage abstraction for persistence-aware document management
+
+## Final Architecture
+
+In the final module, documents can move between memory and disk depending on configured limits. Search and access operations update recency, and persistence support allows the store to scale beyond in-memory capacity.
+
+Important final-stage responsibilities:
+
+- store text and binary documents
+- index text for search
+- support undo operations
+- enforce document count and byte limits
+- evict least-recently-used documents when limits are exceeded
+- serialize documents to disk and restore them on demand
+
+## Build And Test
+
+Each milestone is an independent Maven module. For example, to build and test the final implementation:
+
+```bash
+cd document-store-evolution/persistent-document-store
+mvn test
+```
+
+You can also work through the modules one at a time to see how the system evolves.
+
+## Notes
+
+The Java package names inside the source still use the original milestone naming scheme such as `edu.yu.cs.com1320.project.stage5`. The top-level folder names were cleaned up to better describe what each module actually accomplishes.
+
+## Author
+
+Jacob Neuer
